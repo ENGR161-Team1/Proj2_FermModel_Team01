@@ -1,4 +1,4 @@
-from systems.processes import Fermentation, Filtration, Distillation
+from systems.processes import Fermentation, Filtration, Distillation, Dehydration
 
 # Test Fermentation class
 test_fermenter = Fermentation(0.85)
@@ -25,6 +25,16 @@ test_distiller = Distillation(0.80)
 print(test_distiller.name)
 print(test_distiller.distill({
     "ethanol": 25.5,
+    "water": 100,
+    "sugar": 7.5,
+    "fiber": 20
+}))
+
+# Test Dehydration class
+test_dehydrator = Dehydration(0.95)
+print(test_dehydrator.name)
+print(test_dehydrator.dehydrate({
+    "ethanol": 20.4,
     "water": 100,
     "sugar": 7.5,
     "fiber": 20
