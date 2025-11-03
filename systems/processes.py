@@ -45,3 +45,30 @@ class Fermentation(System):
             "fiber": input["fiber"] if input.get("fiber") is not None else None
         }
         # pass
+
+class Filtration(System):
+    def __init__(self, efficiency=float):
+        inputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        outputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        super().__init__("Filtration", inputs, outputs, efficiency, self.filter())
+        # Additional initialization for Filter can go here
+
+    
+    def filter(self, input=dict()):
+        return {
+            "ethanol": input["ethanol"] if input.get("ethanol") is not None else None, 
+            "water": input["water"] if input.get("water") is not None else None,
+            "sugar": input["sugar"] if input.get("sugar") is not None else None,
+            "fiber": (1 - self.efficiency) * input["fiber"] if input.get("fiber") is not None else None
+        }
+        # pass
