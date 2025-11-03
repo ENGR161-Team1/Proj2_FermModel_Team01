@@ -45,4 +45,3 @@ class Fermentation(System):
             "fiber": input["fiber"] if input.get("fiber") is not None else None
         }
         # pass
-        # Placeholder for fermentation logic
