@@ -3,8 +3,8 @@ name = "EthanolPlantModel"
 version = "0.0.2"
 authors = [
     { name = "Advay  Ramesh Chandra", email = "chand289@purdue.edu" },
-    { name = "Samuel Miles Razor", email = "razor@purdue.edu" }
-    { name = "Karley Jo Hammond", email = "hammon88@purdue.edu" }
+    { name = "Karley Jo Hammond", email = "hammon88@purdue.edu" },
+    { name = "Samuel Miles Razor", email = "razor@purdue.edu" },
     { name = "Kathering Elizabeth Hampton", email = "hampto64@purdue.edu" }
 ]
 description = "A model for an ethanol plant"
