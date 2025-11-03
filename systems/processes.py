@@ -1,5 +1,5 @@
 class System:
-    def __init__(self, name=str, inputs=list(), outputs=list(), efficiency=float=1.0, massFunction=None):
+    def __init__(self, name=str, inputs=list(), outputs=list(), efficiency=float, massFunction=None):
         self.name = name
         self.inputs = inputs
         self.outputs = outputs
