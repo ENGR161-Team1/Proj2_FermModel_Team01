@@ -20,7 +20,7 @@ class System:
         # Placeholder for display logic
 
 class Fermentation(System):
-    def __init__(self, name = "Fermentation", efficiency=float):
+    def __init__(self, efficiency=float):
         inputs = {
             "ethanol": [],
             "water": [],
@@ -33,16 +33,16 @@ class Fermentation(System):
             "sugar": [],
             "fiber": []
         }
-        super().__init__(name, inputs, outputs, efficiency, self.ferment())
+        super().__init__("Fermentation", inputs, outputs, efficiency, self.ferment())
         # Additional initialization for Fermenter can go here
 
     
     def ferment(self, input=dict()):
         return {
-            "ethanol": None,
-            "water": None,
-            "sugar": None,
-            "fiber": None
+            "ethanol": 0.51 * input["sugar"] * self.efficiency if input.get("sugar") is not None else None, 
+            "water": input["water"] if input.get("water") is not None and input.get("sugar") is not None else None,
+            "sugar": (1 - self.efficiency) * input["sugar"] if input.get("sugar") is not None else None,
+            "fiber": input["fiber"] if input.get("fiber") is not None else None
         }
         # pass
         # Placeholder for fermentation logic
