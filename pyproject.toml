@@ -1,0 +1,16 @@
+[project]
+name = "EthanolPlantModel"
+version = "0.1.0"
+authors = [
+    { name = "Advay Chandra", email = "chand289@purdue.edu" },
+]
+description = "A model for an ethanol plant"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "matplotlib",
+]
+
+[project.urls]
+Homepage = "https://github.com/ENGR161-Team1/EthanolPlantModel"
