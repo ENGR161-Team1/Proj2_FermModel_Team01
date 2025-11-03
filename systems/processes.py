@@ -72,3 +72,30 @@ class Filtration(System):
             "fiber": (1 - self.efficiency) * input["fiber"] if input.get("fiber") is not None else None
         }
         # pass
+
+class Distillation(System):
+    def __init__(self, efficiency=float):
+        inputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        outputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        super().__init__("Distillation", inputs, outputs, efficiency, self.distill())
+        # Additional initialization for Distiller can go here
+
+    
+    def distill(self, input=dict()):
+        return {
+            "ethanol": input["ethanol"] if input.get("ethanol") is not None else None, 
+            "water": (1 - self.efficiency) * input["water"] if input.get("water") is not None else None,
+            "sugar": input["sugar"] if input.get("sugar") is not None else None,
+            "fiber": input["fiber"] if input.get("fiber") is not None else None
+        }
+        # pass
