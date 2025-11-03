@@ -1,6 +1,6 @@
-from systems.processes import Fermentation, Filtration
+from systems.processes import Fermentation, Filtration, Distillation
 
-# Test Fermentation and Filtration classes
+# Test Fermentation class
 test_fermenter = Fermentation(0.85)
 print(test_fermenter.name)
 print(test_fermenter.ferment({
@@ -10,9 +10,20 @@ print(test_fermenter.ferment({
     "fiber": 20
 }))
 
+# Test Filtration class
 test_filter = Filtration(0.90)
 print(test_filter.name)
 print(test_filter.filter({
+    "ethanol": 25.5,
+    "water": 100,
+    "sugar": 7.5,
+    "fiber": 20
+}))
+
+# Test Distillation class
+test_distiller = Distillation(0.80)
+print(test_distiller.name)
+print(test_distiller.distill({
     "ethanol": 25.5,
     "water": 100,
     "sugar": 7.5,
