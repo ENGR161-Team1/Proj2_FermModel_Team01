@@ -53,18 +53,6 @@ class Fermentation(System):
 
 class Filtration(System):
     def __init__(self, efficiency=float):
-        inputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        outputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
         super().__init__("Filtration", efficiency, self.filter())
         # Additional initialization for Filter can go here
 
