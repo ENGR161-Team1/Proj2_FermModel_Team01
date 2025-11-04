@@ -39,3 +39,12 @@ print(test_dehydrator.dehydrate({
     "sugar": 7.5,
     "fiber": 20
 }))
+
+# Fermentation iteration test
+input_stream = {
+    "ethanol": [0, 0, 0],
+    "water": [100, 100, 100],
+    "sugar": [50, 40, 30],
+    "fiber": [20, 20, 20]
+}
+print(test_fermenter.iterateInputs(input_stream))
