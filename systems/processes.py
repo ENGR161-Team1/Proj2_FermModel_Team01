@@ -71,4 +71,71 @@ class Filtration(System):
             "sugar": input["sugar"] if input.get("sugar") is not None else None,
             "fiber": (1 - self.efficiency) * input["fiber"] if input.get("fiber") is not None else None
         }
-        # pass
+
+class Distillation(System):
+    def __init__(self, efficiency=float):
+        inputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        outputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        super().__init__("Distillation", inputs, outputs, efficiency, self.distill())
+        # Additional initialization for Distiller can go here
+
+    
+    def distill(self, input=dict()):
+        if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
+            return {
+                "ethanol": None,
+                "water": None,
+                "sugar": None,
+                "fiber": None
+            }
+        distill_inefficiency = (1 / self.efficiency) - 1
+        in_nonEthanol = input["water"] + input["sugar"] + input["fiber"]
+        return {
+            "ethanol": input["ethanol"],
+            "water": (input["water"] * input["ethanol"] * distill_inefficiency) / in_nonEthanol, 
+            "sugar": (input["sugar"] * input["ethanol"] * distill_inefficiency) / in_nonEthanol,
+            "fiber": (input["fiber"] * input["ethanol"] * distill_inefficiency) / in_nonEthanol
+        }
+
+class Dehydration(System):
+    def __init__(self, efficiency=float):
+        inputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        outputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        super().__init__("Dehydration", inputs, outputs, efficiency, self.dehydrate())
+        # Additional initialization for Dehydrator can go here
+
+    
+    def dehydrate(self, input=dict()):
+        if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
+            return {
+                "ethanol": None,
+                "water": None,
+                "sugar": None,
+                "fiber": None
+            }
+        return {
+            "ethanol": input["ethanol"], 
+            "water": input["water"] * (1 - self.efficiency),
+            "sugar": input["sugar"],
+            "fiber": input["fiber"],
+        }
