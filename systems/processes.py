@@ -1,8 +1,18 @@
 class System:
-    def __init__(self, name=str, inputs=list(), outputs=list(), efficiency=float, massFunction=None):
+    def __init__(self, name=str, efficiency=float, massFunction=None):
         self.name = name
-        self.inputs = inputs
-        self.outputs = outputs
+        self.inputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
+        self.outputs = {
+            "ethanol": [],
+            "water": [],
+            "sugar": [],
+            "fiber": []
+        }
         self.efficiency = efficiency
         self.massFunction = massFunction
     
@@ -21,19 +31,7 @@ class System:
 
 class Fermentation(System):
     def __init__(self, efficiency=float):
-        inputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        outputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        super().__init__("Fermentation", inputs, outputs, efficiency, self.ferment())
+        super().__init__("Fermentation", efficiency, self.ferment())
         # Additional initialization for Fermenter can go here
 
     
@@ -60,7 +58,7 @@ class Filtration(System):
             "sugar": [],
             "fiber": []
         }
-        super().__init__("Filtration", inputs, outputs, efficiency, self.filter())
+        super().__init__("Filtration", efficiency, self.filter())
         # Additional initialization for Filter can go here
 
     
@@ -74,19 +72,7 @@ class Filtration(System):
 
 class Distillation(System):
     def __init__(self, efficiency=float):
-        inputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        outputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        super().__init__("Distillation", inputs, outputs, efficiency, self.distill())
+        super().__init__("Distillation", efficiency, self.distill())
         # Additional initialization for Distiller can go here
 
     
@@ -109,19 +95,7 @@ class Distillation(System):
 
 class Dehydration(System):
     def __init__(self, efficiency=float):
-        inputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        outputs = {
-            "ethanol": [],
-            "water": [],
-            "sugar": [],
-            "fiber": []
-        }
-        super().__init__("Dehydration", inputs, outputs, efficiency, self.dehydrate())
+        super().__init__("Dehydration", efficiency, self.dehydrate())
         # Additional initialization for Dehydrator can go here
 
     
