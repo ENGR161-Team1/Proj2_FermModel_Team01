@@ -22,7 +22,6 @@ class System:
     
     def iterateInputs(self, inputValues=dict()):
         # Appends input values to the inputs dictionary
-        print("Input Values:", inputValues)  # Debugging line to check inputValues
         for key in inputValues:
             self.inputs[key].append(inputValues[key])
 
