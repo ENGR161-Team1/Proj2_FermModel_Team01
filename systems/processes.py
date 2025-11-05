@@ -22,15 +22,19 @@ class System:
     
     def iterateInputs(self, inputValues=dict()):
         # Appends input values to the inputs dictionary
+        print("Input Values:", inputValues)  # Debugging line to check inputValues
         for key in inputValues:
             self.inputs[key].append(inputValues[key])
 
         # Process each set of inputs and appends to outputs
-        for i in range(len(self.inputs["ethanol"] - len(self.outputs["ethanol"]))):
-            input_dict = {key: self.inputs[key][i] for key in self.inputs}
+        for i in range(len(inputValues["ethanol"])):
+            input_dict = {key: inputValues[key][i] for key in inputValues}
+            print("Input Dict:", input_dict)  # Debugging line to check input_dict
             output_dict = self.massFunction(input_dict)
             for key in self.outputs:
-                self.outputs[key].append(output_dict[key]) 
+                self.outputs[key].append(output_dict[key])
+
+        return self.outputs 
     
     def display(self):
         pass
@@ -38,7 +42,7 @@ class System:
 
 class Fermentation(System):
     def __init__(self, efficiency=float):
-        super().__init__("Fermentation", efficiency, self.ferment())
+        super().__init__("Fermentation", efficiency, self.ferment)
         # Additional initialization for Fermenter can go here
 
     
@@ -53,7 +57,7 @@ class Fermentation(System):
 
 class Filtration(System):
     def __init__(self, efficiency=float):
-        super().__init__("Filtration", efficiency, self.filter())
+        super().__init__("Filtration", efficiency, self.filter)
         # Additional initialization for Filter can go here
 
     
@@ -67,7 +71,7 @@ class Filtration(System):
 
 class Distillation(System):
     def __init__(self, efficiency=float):
-        super().__init__("Distillation", efficiency, self.distill())
+        super().__init__("Distillation", efficiency, self.distill)
         # Additional initialization for Distiller can go here
 
     
@@ -90,7 +94,7 @@ class Distillation(System):
 
 class Dehydration(System):
     def __init__(self, efficiency=float):
-        super().__init__("Dehydration", efficiency, self.dehydrate())
+        super().__init__("Dehydration", efficiency, self.dehydrate)
         # Additional initialization for Dehydrator can go here
 
     
