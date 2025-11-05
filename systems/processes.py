@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class System:
     def __init__(self, name=str, efficiency=float, massFunction=None):
         self.name = name
@@ -34,9 +36,14 @@ class System:
 
         return self.outputs 
     
-    def display(self):
-        pass
-        # Placeholder for display logic
+    def display(self, input=str, output=str):
+        display_plot = plt.plot(self.inputs[input], self.outputs[output], linestyle='--', marker='o')
+        display_plot.title(f"{self.name} System: {input} vs {output}")
+        display_plot.xlabel(f"Input {input} (units)")
+        display_plot.ylabel(f"Output {output} (units)")
+        display_plot.grid(True)
+        plt.show()
+
 
 class Fermentation(System):
     def __init__(self, efficiency=float):
