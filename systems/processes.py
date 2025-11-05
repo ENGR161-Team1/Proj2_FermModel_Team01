@@ -26,7 +26,7 @@ class System:
             self.inputs[key].append(inputValues[key])
 
         # Process each set of inputs and appends to outputs
-        for i in range(len(self.inputs["ethanol"])):
+        for i in range(len(self.inputs["ethanol"] - len(self.outputs["ethanol"]))):
             input_dict = {key: self.inputs[key][i] for key in self.inputs}
             output_dict = self.massFunction(input_dict)
             for key in self.outputs:
