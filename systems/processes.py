@@ -20,11 +20,15 @@ class System:
         self.efficiency = efficiency
         self.massFunction = massFunction
     
-    def convertMass(self):
+    def flowToMass(self):
         pass
         # Placeholder for mass conversion logic
     
-    def iterateInputs(self, inputValues=dict()):
+    def massToFlow(self):
+        pass
+        # Placeholder for flow conversion logic
+    
+    def iterateInputs(self, inputValues=dict(), **kwargs):
         # Appends input values to the inputs dictionary
         for key in inputValues:
             self.inputs[key] += inputValues[key]
