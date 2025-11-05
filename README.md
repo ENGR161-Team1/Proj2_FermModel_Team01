@@ -23,6 +23,7 @@ Each process stage can be configured with different efficiency parameters to sim
 - Python >= 3.10
 - NumPy
 - Matplotlib
+- PyGObject
 
 ## Installation
 
@@ -30,6 +31,9 @@ Each process stage can be configured with different efficiency parameters to sim
 ```bash
 # Clone the repository
 git clone https://github.com/ENGR161-Team1/EthanolPlantModel.git
+
+# Install necessary packages
+sudo apt install libgirepository2.0-dev libcairo2-dev libgtk-4-dev pkg-config python3-dev python3-gi python3-gi-cairo gir1.2-gtk-4.0 gobject-introspection
 
 # Install using pip
 cd EthanolPlantModel
@@ -43,6 +47,9 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone the repository
 git clone https://github.com/ENGR161-Team1/EthanolPlantModel.git
+
+# Install necessary packages
+sudo apt install libgirepository2.0-dev libcairo2-dev libgtk-4-dev pkg-config python3-dev python3-gi python3-gi-cairo gir1.2-gtk-4.0 gobject-introspection
 
 # Install using uv
 cd EthanolPlantModel
