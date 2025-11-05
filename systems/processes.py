@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class System:
     def __init__(self, name=str, efficiency=float, massFunction=None):
         self.name = name
@@ -34,7 +36,8 @@ class System:
 
         return self.outputs 
     
-    def display(self):
+    def display(self, input=str, output=str):
+        display_figure = plt.figure()
         pass
         # Placeholder for display logic
 
