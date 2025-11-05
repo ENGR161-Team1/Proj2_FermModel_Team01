@@ -1,4 +1,6 @@
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use("GTK4agg")
 
 class System:
     def __init__(self, name=str, efficiency=float, massFunction=None):
@@ -25,7 +27,7 @@ class System:
     def iterateInputs(self, inputValues=dict()):
         # Appends input values to the inputs dictionary
         for key in inputValues:
-            self.inputs[key].append(inputValues[key])
+            self.inputs[key] += inputValues[key]
 
         # Process each set of inputs and appends to outputs
         for i in range(len(inputValues["ethanol"])):
@@ -37,11 +39,14 @@ class System:
         return self.outputs 
     
     def display(self, input=str, output=str):
-        display_plot = plt.plot(self.inputs[input], self.outputs[output], linestyle='--', marker='o')
-        display_plot.title(f"{self.name} System: {input} vs {output}")
-        display_plot.xlabel(f"Input {input} (units)")
-        display_plot.ylabel(f"Output {output} (units)")
-        display_plot.grid(True)
+        print(f"Displaying {self.name} System: {input} vs {output}") # Debug statement
+        print(f"Inputs: {self.inputs[input]}") # Debug statement
+        print(f"Outputs: {self.outputs[output]}") # Debug statement
+        plt.plot(self.inputs[input], self.outputs[output], linestyle='--', marker='o')
+        plt.title(f"{self.name} System: {input} vs {output}")
+        plt.xlabel(f"Input {input} (units)")
+        plt.ylabel(f"Output {output} (units)")
+        plt.grid(True)
         plt.show()
 
 
