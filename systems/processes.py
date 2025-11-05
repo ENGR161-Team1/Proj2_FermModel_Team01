@@ -22,6 +22,7 @@ class System:
     
     def iterateInputs(self, inputValues=dict()):
         # Appends input values to the inputs dictionary
+        print("Input Values:", inputValues)  # Debugging line to check inputValues
         for key in inputValues:
             self.inputs[key].append(inputValues[key])
 
@@ -55,7 +56,7 @@ class Fermentation(System):
 
 class Filtration(System):
     def __init__(self, efficiency=float):
-        super().__init__("Filtration", efficiency, self.filter())
+        super().__init__("Filtration", efficiency, self.filter)
         # Additional initialization for Filter can go here
 
     
