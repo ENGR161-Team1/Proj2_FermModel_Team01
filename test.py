@@ -1,5 +1,6 @@
 from systems.processes import Fermentation, Filtration, Distillation, Dehydration
 
+"""
 # Test Fermentation class
 test_fermenter = Fermentation(0.85)
 print(test_fermenter.name)
@@ -39,8 +40,10 @@ print(test_dehydrator.dehydrate({
     "sugar": 7.5,
     "fiber": 20
 }))
+"""
 
 # Fermentation iteration test
+test_fermenter = Fermentation(0.85)
 input_stream = {
     "ethanol": [0, 0, 0],
     "water": [100, 100, 100],
@@ -48,3 +51,6 @@ input_stream = {
     "fiber": [20, 20, 20]
 }
 print(test_fermenter.iterateInputs(input_stream))
+print(test_fermenter.inputs)
+print(test_fermenter.outputs)
+test_fermenter.display("sugar", "ethanol")
