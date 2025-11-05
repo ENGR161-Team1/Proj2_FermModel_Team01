@@ -22,14 +22,12 @@ class System:
     
     def iterateInputs(self, inputValues=dict()):
         # Appends input values to the inputs dictionary
-        print("Input Values:", inputValues)  # Debugging line to check inputValues
         for key in inputValues:
             self.inputs[key].append(inputValues[key])
 
         # Process each set of inputs and appends to outputs
         for i in range(len(inputValues["ethanol"])):
             input_dict = {key: inputValues[key][i] for key in inputValues}
-            print("Input Dict:", input_dict)  # Debugging line to check input_dict
             output_dict = self.massFunction(input_dict)
             for key in self.outputs:
                 self.outputs[key].append(output_dict[key])
