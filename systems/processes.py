@@ -357,7 +357,7 @@ class System:
 
 class Fermentation(System):
     def __init__(self, efficiency=float):
-        super().__init__("Fermentation", efficiency, self.ferment)
+        super().__init__(name="Fermentation", efficiency=efficiency, massFunction=self.ferment)
         # Additional initialization for Fermenter can go here
 
     
@@ -372,7 +372,7 @@ class Fermentation(System):
 
 class Filtration(System):
     def __init__(self, efficiency=float):
-        super().__init__(name = "Filtration", efficiency = efficiency, massFunction = self.filter)
+        super().__init__(name="Filtration", efficiency=efficiency, massFunction=self.filter)
         # Additional initialization for Filter can go here
 
     
@@ -386,7 +386,7 @@ class Filtration(System):
 
 class Distillation(System):
     def __init__(self, efficiency=float):
-        super().__init__(name = "Distillation", efficiency = efficiency, massFunction = self.distill)
+        super().__init__(name="Distillation", efficiency=efficiency, massFunction=self.distill)
         # Additional initialization for Distiller can go here
 
     
@@ -409,7 +409,7 @@ class Distillation(System):
 
 class Dehydration(System):
     def __init__(self, efficiency=float):
-        super().__init__(name = "Dehydration", efficiency = efficiency, massFunction = self.dehydrate)
+        super().__init__(name="Dehydration", efficiency=efficiency, massFunction=self.dehydrate)
         # Additional initialization for Dehydrator can go here
 
     
