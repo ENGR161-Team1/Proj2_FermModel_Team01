@@ -1,6 +1,6 @@
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use("gtk4agg")
+# matplotlib.use("gtk4agg") --- IGNORE ---
 
 class System:
     def __init__(self, **kwargs):
