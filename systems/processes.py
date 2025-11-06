@@ -96,11 +96,13 @@ class System:
                 elif component == "fiber":
                     mass_inputs[component] = inputs[component] * self.densityFiber
                 elif component == "total":
-                    mass_inputs[component] = inputs[component] * (
-                        self.densityEthanol + self.densityWater + self.densitySugar + self.densityFiber
-                    )  # Simplified total density calculation
+                    # Skip total here, calculate it after processing other components
+                    pass
                 else:
                     raise ValueError(f"Unknown component: {component}")
+            # Calculate total after all components are processed
+            if "total" in inputs:
+                mass_inputs["total"] = sum(mass_inputs[comp] for comp in mass_inputs)
             return mass_inputs
         else:  # composition
             if total_flow is None:
@@ -141,11 +143,13 @@ class System:
                 elif component == "fiber":
                     flow_inputs[component] = inputs[component] / self.densityFiber
                 elif component == "total":
-                    flow_inputs[component] = inputs[component] / (
-                        self.densityEthanol + self.densityWater + self.densitySugar + self.densityFiber
-                    )  # Simplified total density calculation
+                    # Skip total here, calculate it after processing other components
+                    pass
                 else:
                     raise ValueError(f"Unknown component: {component}")
+            # Calculate total after all components are processed
+            if "total" in inputs:
+                flow_inputs["total"] = sum(flow_inputs[key] for key in flow_inputs)
             return flow_inputs
         else:  # composition
             if total_mass is None:
@@ -190,28 +194,26 @@ class System:
         
         # Convert inputs to amounts based on input_type
         if input_type == "composition":
+            if total_mass is None:
+                raise ValueError("total_mass must be provided when input_type is 'composition'")
             input_amounts = {key: inputs[key] * total_mass for key in inputs}
             input_amounts["total"] = total_mass
             input_composition = inputs
         elif input_type == "amount":
-            input_amounts = inputs
+            input_amounts = inputs.copy()
             if input_amounts.get("total") is None:
-                input_amounts["total"] = sum(input_amounts.values())
-                input_total = input_amounts["total"]
-            elif total_mass is not None:
-                input_total = total_mass
-            else:
-                input_total = input_amounts["total"]
+                input_amounts["total"] = sum(v for k, v in input_amounts.items() if k != "total")
+            input_total = total_mass if total_mass is not None else input_amounts["total"]
             if input_total <= 0:
                 raise ValueError("Total input amount must be greater than zero to calculate composition")
-            input_composition = {key: input_amounts[key] / input_amounts["total"] for key in input_amounts if key != "total"}
+            input_composition = {key: input_amounts[key] / input_total for key in input_amounts if key != "total"}
         else:  # full
             if any(key not in inputs["amount"] for key in ["ethanol", "water", "sugar", "fiber"]):
                 raise ValueError("All components must be provided in 'amount' when input_type is 'full'")
             if any(key not in inputs["composition"] for key in ["ethanol", "water", "sugar", "fiber"]):
                 raise ValueError("All components must be provided in 'composition' when input_type is 'full'")
-            input_amounts = inputs["amount"]
-            input_amounts["total"] = sum(input_amounts.values())
+            input_amounts = inputs["amount"].copy()
+            input_amounts["total"] = sum(v for k, v in input_amounts.items() if k != "total")
             input_composition = inputs["composition"]
 
         # Store inputs if requested
@@ -224,27 +226,28 @@ class System:
         # Process inputs through massFunction
         output_amounts = self.massFunction(input_amounts) if self.massFunction else input_amounts
 
-        # Calculate total output and format output based on output_type
-        output_total = sum(output_amounts.values())
+        # Filter out None values and calculate total output
+        filtered_output = {k: v for k, v in output_amounts.items() if v is not None}
+        output_total = sum(filtered_output.values())
+        
         if output_type == "amount":
-            output_amounts["total"] = output_total
-            return output_amounts
+            filtered_output["total"] = output_total
+            return filtered_output
         else: 
             if output_total <= 0:
                 raise ValueError("Total output amount must be greater than zero to calculate composition")
-            output_composition = {key: output_amounts[key] / output_total for key in output_amounts}
+            output_composition = {key: filtered_output[key] / output_total for key in filtered_output}
             if output_type == "composition":
                 return output_composition
             else:  # full
-                output_composition = {key: output_amounts[key] / output_total for key in output_amounts}
                 if store_outputs:
-                    for key in output_amounts:
-                        self.output_log["mass"]["amount"][key].append(output_amounts[key])
+                    for key in filtered_output:
+                        self.output_log["mass"]["amount"][key].append(filtered_output[key])
                         self.output_log["mass"]["composition"][key].append(output_composition[key])
                     self.output_log["mass"]["amount"]["total"].append(output_total)
-                output_amounts["total"] = output_total
+                filtered_output["total"] = output_total
                 outputs = {
-                    "amount": output_amounts,
+                    "amount": filtered_output,
                     "composition": output_composition
                 }
                 return outputs
@@ -266,7 +269,7 @@ class System:
                 "composition": inputs["composition"]  # Composition is dimensionless
             }
             mass_input_type = "full"
-            total_mass = mass_inputs["amount"]["total"] if "total" in mass_inputs["amount"] else None
+            total_mass = mass_inputs["amount"].get("total", None)
         elif input_type == "amount":
             mass_inputs = self.flowToMass(inputs=inputs, mode="amount")
             mass_input_type = "amount"
@@ -280,45 +283,56 @@ class System:
         else:
             raise ValueError("input_type must be either 'amount', 'composition', or 'full'")
 
-        # Process mass inputs
+        # Process mass inputs (store mass data as well)
         mass_outputs = self.processMass(
             inputs=mass_inputs,
             input_type=mass_input_type,
             output_type="full",
             total_mass=total_mass,
-            store_inputs=False,
-            store_outputs=False
+            store_inputs=store_inputs,
+            store_outputs=store_outputs
         )
 
         # Convert mass outputs back to flow outputs
         flow_output_amounts = self.massToFlow(inputs=mass_outputs["amount"], mode="amount")
         
-        # Store inputs and outputs if requested
+        # Store flow inputs if requested
         if store_inputs:
             if input_type == "full":
-                for key in inputs["amount"]:
-                    self.input_log["flow"]["amount"][key].append(inputs["amount"][key])
-                for key in inputs["composition"]:
-                    self.input_log["flow"]["composition"][key].append(inputs["composition"][key])
-                self.input_log["flow"]["amount"]["total"].append(total_flow)
+                for key in ["ethanol", "water", "sugar", "fiber"]:
+                    if key in inputs["amount"]:
+                        self.input_log["flow"]["amount"][key].append(inputs["amount"][key])
+                    if key in inputs["composition"]:
+                        self.input_log["flow"]["composition"][key].append(inputs["composition"][key])
+                if total_flow is not None:
+                    self.input_log["flow"]["amount"]["total"].append(total_flow)
+                else:
+                    calc_total = sum(inputs["amount"][k] for k in inputs["amount"] if k != "total")
+                    self.input_log["flow"]["amount"]["total"].append(calc_total)
             elif input_type == "amount":
-                for key in inputs:
-                    self.input_log["flow"]["amount"][key].append(inputs[key])
+                for key in ["ethanol", "water", "sugar", "fiber"]:
+                    if key in inputs:
+                        self.input_log["flow"]["amount"][key].append(inputs[key])
                 flow_total = inputs.get("total", sum(inputs[k] for k in inputs if k != "total"))
                 self.input_log["flow"]["amount"]["total"].append(flow_total)
-                for key in inputs:
-                    if key != "total":
+                for key in ["ethanol", "water", "sugar", "fiber"]:
+                    if key in inputs:
                         self.input_log["flow"]["composition"][key].append(inputs[key] / flow_total if flow_total > 0 else 0)
             elif input_type == "composition":
-                for key in inputs:
-                    self.input_log["flow"]["composition"][key].append(inputs[key])
+                for key in ["ethanol", "water", "sugar", "fiber"]:
+                    if key in inputs:
+                        self.input_log["flow"]["composition"][key].append(inputs[key])
                 self.input_log["flow"]["amount"]["total"].append(total_flow)
 
+        # Store flow outputs if requested
         if store_outputs:
-            for key in flow_output_amounts:
-                self.output_log["flow"]["amount"][key].append(flow_output_amounts[key])
-            for key in mass_outputs["composition"]:
-                self.output_log["flow"]["composition"][key].append(mass_outputs["composition"][key])
+            for key in ["ethanol", "water", "sugar", "fiber"]:
+                if key in flow_output_amounts:
+                    self.output_log["flow"]["amount"][key].append(flow_output_amounts[key])
+                if key in mass_outputs["composition"]:
+                    self.output_log["flow"]["composition"][key].append(mass_outputs["composition"][key])
+            if "total" in flow_output_amounts:
+                self.output_log["flow"]["amount"]["total"].append(flow_output_amounts["total"])
 
         # Format output based on output_type
         if output_type == "amount":
