@@ -2,8 +2,18 @@ import matplotlib
 import matplotlib.pyplot as plt
 # matplotlib.use("gtk4agg") --- IGNORE ---
 
+
 class System:
+    """
+    Base class for modeling chemical processing systems.
+    Handles mass and flow conversions, processing, and logging of inputs/outputs.
+    """
+    
     def __init__(self, **kwargs):
+        """
+        Initialize a System with name, efficiency, and optional mass function.
+        Sets up input/output logs for tracking mass and flow data.
+        """
         self.name = kwargs.get("name", "System")
         self.input_log = {
             "mass": {
@@ -71,20 +81,36 @@ class System:
         }
         self.efficiency = kwargs.get("efficiency", 1.0)
         self.massFunction = kwargs.get("massFunction", None)
+        
+        # Density constants for conversion between mass and flow (kg/m^3)
         self.densityWater = 997  # kg/m^3
         self.densityEthanol = 789  # kg/m^3
         self.densitySugar = 1590  # kg/m^3
         self.densityFiber = 1311  # kg/m^3
 
     def flowToMass(self, **kwargs):
+        """
+        Convert volumetric flow rates to mass amounts.
+        
+        Args:
+            inputs: Dictionary of component flow rates
+            mode: 'amount' for absolute values or 'composition' for fractional values
+            total_flow: Total flow rate (required when mode='composition')
+        
+        Returns:
+            Dictionary of mass amounts for each component
+        """
         inputs = kwargs.get("inputs", dict())
         mode = kwargs.get("mode", "amount")
         total_flow = kwargs.get("total_flow", None)
+        
         if mode not in ["amount", "composition"]:
             raise ValueError("mode must be either 'amount' or 'composition'")
         if not inputs:
             raise ValueError("No inputs provided for conversion")
+            
         if mode == "amount":
+            # Convert flow amounts to mass amounts using component densities
             mass_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
@@ -105,6 +131,7 @@ class System:
                 mass_inputs["total"] = sum(mass_inputs[comp] for comp in mass_inputs)
             return mass_inputs
         else:  # composition
+            # Convert flow compositions to mass amounts using total flow and densities
             if total_flow is None:
                 raise ValueError("total_flow must be provided when mode is 'composition'")
             mass_inputs = dict()
@@ -124,14 +151,28 @@ class System:
             
     
     def massToFlow(self, **kwargs):
+        """
+        Convert mass amounts to volumetric flow rates.
+        
+        Args:
+            inputs: Dictionary of component masses
+            mode: 'amount' for absolute values or 'composition' for fractional values
+            total_mass: Total mass (required when mode='composition')
+        
+        Returns:
+            Dictionary of flow rates for each component
+        """
         inputs = kwargs.get("inputs", dict())
         mode = kwargs.get("mode", "amount")
         total_mass = kwargs.get("total_mass", None)
+        
         if mode not in ["amount", "composition"]:
             raise ValueError("mode must be either 'amount' or 'composition'")
         if not inputs:
             raise ValueError("No inputs provided for conversion")
+            
         if mode == "amount":
+            # Convert mass amounts to flow amounts using component densities
             flow_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
@@ -152,6 +193,7 @@ class System:
                 flow_inputs["total"] = sum(flow_inputs[key] for key in flow_inputs)
             return flow_inputs
         else:  # composition
+            # Convert mass compositions to flow amounts using total mass and densities
             if total_mass is None:
                 raise ValueError("total_mass must be provided when mode is 'composition'")
             flow_inputs = dict()
@@ -171,7 +213,22 @@ class System:
 
     
     def processMass(self, **kwargs):
-        # Process mass inputs and return outputs based on specified types
+        """
+        Process mass inputs through the system's mass function.
+        Handles conversion between amounts and compositions, applies the mass function,
+        and optionally stores results in logs.
+        
+        Args:
+            inputs: Dictionary of input values (format depends on input_type)
+            input_type: 'amount', 'composition', or 'full'
+            output_type: 'amount', 'composition', or 'full'
+            total_mass: Total input mass (required for composition inputs)
+            store_inputs: Whether to log input values
+            store_outputs: Whether to log output values
+        
+        Returns:
+            Processed outputs in the format specified by output_type
+        """
         # Extract parameters from kwargs
         inputs = kwargs.get("inputs", dict())
         input_type = kwargs.get("input_type", "full")
@@ -194,12 +251,14 @@ class System:
         
         # Convert inputs to amounts based on input_type
         if input_type == "composition":
+            # Convert fractional compositions to absolute amounts
             if total_mass is None:
                 raise ValueError("total_mass must be provided when input_type is 'composition'")
             input_amounts = {key: inputs[key] * total_mass for key in inputs}
             input_amounts["total"] = total_mass
             input_composition = inputs
         elif input_type == "amount":
+            # Calculate compositions from amounts
             input_amounts = inputs.copy()
             if input_amounts.get("total") is None:
                 input_amounts["total"] = sum(v for k, v in input_amounts.items() if k != "total")
@@ -208,6 +267,7 @@ class System:
                 raise ValueError("Total input amount must be greater than zero to calculate composition")
             input_composition = {key: input_amounts[key] / input_total for key in input_amounts if key != "total"}
         else:  # full
+            # Both amounts and compositions provided
             if any(key not in inputs["amount"] for key in ["ethanol", "water", "sugar", "fiber"]):
                 raise ValueError("All components must be provided in 'amount' when input_type is 'full'")
             if any(key not in inputs["composition"] for key in ["ethanol", "water", "sugar", "fiber"]):
@@ -231,15 +291,19 @@ class System:
         output_total = sum(filtered_output.values())
         
         if output_type == "amount":
+            # Return only amounts
             filtered_output["total"] = output_total
             return filtered_output
         else: 
+            # Calculate compositions for composition or full output
             if output_total <= 0:
                 raise ValueError("Total output amount must be greater than zero to calculate composition")
             output_composition = {key: filtered_output[key] / output_total for key in filtered_output}
             if output_type == "composition":
+                # Return only compositions
                 return output_composition
             else:  # full
+                # Return both amounts and compositions
                 if store_outputs:
                     for key in filtered_output:
                         self.output_log["mass"]["amount"][key].append(filtered_output[key])
@@ -254,7 +318,21 @@ class System:
     
 
     def processFlow(self, **kwargs):
-        # Convert flow inputs to mass, process them, and convert outputs back to flow
+        """
+        Process volumetric flow inputs through the system.
+        Converts flow to mass, processes through mass function, then converts back to flow.
+        
+        Args:
+            inputs: Dictionary of input flow values (format depends on input_type)
+            input_type: 'amount', 'composition', or 'full'
+            output_type: 'amount', 'composition', or 'full'
+            total_flow: Total input flow rate (required for composition inputs)
+            store_inputs: Whether to log input values
+            store_outputs: Whether to log output values
+        
+        Returns:
+            Processed flow outputs in the format specified by output_type
+        """
         inputs = kwargs.get("inputs", dict())
         input_type = kwargs.get("input_type", "full")
         output_type = kwargs.get("output_type", "full")
@@ -347,6 +425,16 @@ class System:
     
 
     def iterateInputs(self, inputValues=dict(), **kwargs):
+        """
+        Process multiple sets of inputs iteratively.
+        Appends each input to the log and processes it through the mass function.
+        
+        Args:
+            inputValues: Dictionary containing lists of input values for each component
+        
+        Returns:
+            Updated output log containing all processed results
+        """
         # Appends input values to the inputs dictionary
         for key in inputValues:
             self.input_log[key] += inputValues[key]
@@ -361,6 +449,13 @@ class System:
         return self.output_log 
     
     def display(self, input=str, output=str):
+        """
+        Display a plot of input vs output relationship.
+        
+        Args:
+            input: Name of the input variable to plot on x-axis
+            output: Name of the output variable to plot on y-axis
+        """
         plt.plot(self.input_log[input], self.output_log[output], linestyle='--', marker='o')
         plt.title(f"{self.name} System: {input} vs {output}")
         plt.xlabel(f"Input {input} (units)")
@@ -370,12 +465,21 @@ class System:
 
 
 class Fermentation(System):
+    """
+    Models the fermentation process where sugar is converted to ethanol.
+    Conversion efficiency determines the fraction of sugar converted.
+    """
+    
     def __init__(self, efficiency=float):
         super().__init__(name="Fermentation", efficiency=efficiency, massFunction=self.ferment)
         # Additional initialization for Fermenter can go here
 
     
     def ferment(self, input=dict()):
+        """
+        Fermentation process: converts sugar to ethanol with specified efficiency.
+        Stoichiometry: 51% of sugar mass becomes ethanol.
+        """
         return {
             "ethanol": 0.51 * input["sugar"] * self.efficiency if input.get("sugar") is not None else None, 
             "water": input["water"] if input.get("water") is not None and input.get("sugar") is not None else None,
@@ -384,13 +488,23 @@ class Fermentation(System):
         }
         # pass
 
+
 class Filtration(System):
+    """
+    Models the filtration process where fiber is removed from the mixture.
+    Efficiency determines the fraction of fiber that is successfully filtered out.
+    """
+    
     def __init__(self, efficiency=float):
         super().__init__(name="Filtration", efficiency=efficiency, massFunction=self.filter)
         # Additional initialization for Filter can go here
 
     
     def filter(self, input=dict()):
+        """
+        Filtration process: removes fiber from the mixture based on efficiency.
+        Other components pass through unchanged.
+        """
         return {
             "ethanol": input["ethanol"] if input.get("ethanol") is not None else None, 
             "water": input["water"] if input.get("water") is not None else None,
@@ -398,13 +512,23 @@ class Filtration(System):
             "fiber": (1 - self.efficiency) * input["fiber"] if input.get("fiber") is not None else None
         }
 
+
 class Distillation(System):
+    """
+    Models the distillation process for separating ethanol from other components.
+    Higher efficiency means better separation (less impurities in ethanol output).
+    """
+    
     def __init__(self, efficiency=float):
         super().__init__(name="Distillation", efficiency=efficiency, massFunction=self.distill)
         # Additional initialization for Distiller can go here
 
     
     def distill(self, input=dict()):
+        """
+        Distillation process: separates ethanol from water, sugar, and fiber.
+        Inefficiency causes proportional amounts of impurities to remain with ethanol.
+        """
         if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
             return {
                 "ethanol": None,
@@ -421,13 +545,23 @@ class Distillation(System):
             "fiber": (input["fiber"] * input["ethanol"] * distill_inefficiency) / in_nonEthanol
         }
 
+
 class Dehydration(System):
+    """
+    Models the dehydration process for removing water from ethanol.
+    Efficiency determines the fraction of water successfully removed.
+    """
+    
     def __init__(self, efficiency=float):
         super().__init__(name="Dehydration", efficiency=efficiency, massFunction=self.dehydrate)
         # Additional initialization for Dehydrator can go here
 
     
     def dehydrate(self, input=dict()):
+        """
+        Dehydration process: removes water from the mixture based on efficiency.
+        Other components pass through unchanged.
+        """
         if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
             return {
                 "ethanol": None,
