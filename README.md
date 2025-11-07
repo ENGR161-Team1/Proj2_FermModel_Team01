@@ -30,14 +30,16 @@ The model tracks four components throughout the process:
 - **Sugar**: Raw material and residual
 - **Fiber**: Solid waste material
 
-Each `System` class maintains input and output histories for all components, enabling detailed analysis and visualization of the production process.
+Each `System` class maintains input and output histories for all components, enabling detailed analysis and visualization of the production process. The system supports both mass-based (kg) and flow-based (m³) calculations with automatic conversions using component densities.
 
 ## Features
-- Mass balance calculations for each process stage
+- Mass and volumetric flow balance calculations for each process stage
 - Configurable efficiency parameters for realistic simulations
-- Built-in visualization using Matplotlib with GTK4 backend
+- Flexible input/output formats: amounts, compositions, or full data
+- Built-in visualization using Matplotlib
 - Iterative processing of multiple input batches
 - Component tracking across the entire production pipeline
+- Automatic unit conversions between mass and flow
 
 ## Dependencies
 - Python >= 3.10
@@ -82,68 +84,161 @@ uv pip install .
 
 ## Usage
 
-### Basic Example
+### Basic Example - Single Batch Processing
 ```python
 from systems.processes import Fermentation, Filtration, Distillation, Dehydration
 
 # Initialize systems with efficiency values (0.0 to 1.0)
-fermenter = Fermentation(efficiency=0.85)    # 85% sugar conversion
-filter_system = Filtration(efficiency=0.90)  # 90% fiber removal
-distiller = Distillation(efficiency=0.80)    # 80% separation efficiency
-dehydrator = Dehydration(efficiency=0.95)    # 95% water removal
+fermenter = Fermentation(efficiency=0.95)
+filter_system = Filtration(efficiency=0.90)
+distiller = Distillation(efficiency=0.98)
+dehydrator = Dehydration(efficiency=0.99)
 
-# Configure input parameters (single batch)
-input_values = {
-    "ethanol": [0],      # Initial ethanol: 0 kg
-    "water": [3000],     # Water: 3000 kg
-    "sugar": [1000],     # Sugar: 1000 kg
-    "fiber": [100]       # Fiber: 100 kg
+# Define input masses (kg)
+mass_input = {
+    "ethanol": 0,
+    "water": 100,
+    "sugar": 50,
+    "fiber": 10
 }
 
-# Process through the production pipeline
-fermented = fermenter.iterateInputs(input_values)
-filtered = filter_system.iterateInputs(fermented)
-distilled = distiller.iterateInputs(filtered)
-final_output = dehydrator.iterateInputs(distilled)
+# Process through fermentation
+fermented = fermenter.processMass(
+    inputs=mass_input,
+    input_type="amount",
+    output_type="full",
+    store_inputs=True,
+    store_outputs=True
+)
 
-# Display results
-print(f"Final ethanol: {final_output['ethanol'][-1]:.2f} kg")
-print(f"Final water: {final_output['water'][-1]:.2f} kg")
-print(f"Residual sugar: {final_output['sugar'][-1]:.2f} kg")
-print(f"Residual fiber: {final_output['fiber'][-1]:.2f} kg")
+print(f"Ethanol produced: {fermented['amount']['ethanol']:.2f} kg")
+print(f"Ethanol composition: {fermented['composition']['ethanol']:.2%}")
+```
+
+### Flow-Based Processing
+```python
+# Define input flows (m³)
+flow_input = {
+    "ethanol": 0.1,
+    "water": 0.5,
+    "sugar": 0.05,
+    "fiber": 0.02
+}
+
+# Process volumetric flow
+filtered = filter_system.processFlow(
+    inputs=flow_input,
+    input_type="amount",
+    output_type="full",
+    store_inputs=True,
+    store_outputs=True
+)
+
+print(f"Output flow - Fiber: {filtered['amount']['fiber']:.4f} m³")
+print(f"Total output flow: {sum(filtered['amount'].values()):.3f} m³")
+```
+
+### Composition-Based Input
+```python
+# Define input composition (fractions must sum to 1.0)
+composition_input = {
+    "ethanol": 0.15,
+    "water": 0.80,
+    "sugar": 0.03,
+    "fiber": 0.02
+}
+
+# Process with total mass specified
+distilled = distiller.processMass(
+    inputs=composition_input,
+    input_type="composition",
+    output_type="full",
+    total_mass=100  # 100 kg total
+)
+
+print(f"Output composition - Ethanol: {distilled['composition']['ethanol']:.2%}")
+```
+
+### Multiple Batch Processing - Mass
+```python
+# Define multiple batches
+mass_batches = {
+    "ethanol": [0, 0, 0, 0],
+    "water": [100, 120, 90, 110],
+    "sugar": [50, 60, 45, 55],
+    "fiber": [10, 12, 9, 11]
+}
+
+# Process all batches iteratively
+fermenter.iterateMassInputs(
+    inputValues=mass_batches,
+    input_type="amount",
+    output_type="full"
+)
+
+# Access results from logs
+print(f"Input sugars: {fermenter.input_log['mass']['amount']['sugar']}")
+print(f"Output ethanols: {fermenter.output_log['mass']['amount']['ethanol']}")
+```
+
+### Multiple Batch Processing - Flow with Compositions
+```python
+# Define composition batches
+flow_compositions = {
+    "ethanol": [0.813, 0.820, 0.805, 0.815],
+    "water": [0.163, 0.155, 0.170, 0.160],
+    "sugar": [0.016, 0.017, 0.016, 0.017],
+    "fiber": [0.008, 0.008, 0.009, 0.008]
+}
+
+total_flows = [1.0, 1.2, 1.1, 1.15]  # m³
+
+# Process all flow batches
+dehydrator.iterateFlowInputs(
+    inputValues=flow_compositions,
+    input_type="composition",
+    output_type="full",
+    total_flow_list=total_flows
+)
+
+print(f"Output water compositions: {dehydrator.output_log['flow']['composition']['water']}")
+```
+
+### Complete Pipeline Example
+```python
+# Chain multiple processes
+input_data = {"ethanol": 0, "water": 3000, "sugar": 1000, "fiber": 100}
+
+# Fermentation
+result1 = fermenter.processMass(inputs=input_data, input_type="amount", output_type="amount")
+
+# Filtration
+result2 = filter_system.processMass(inputs=result1, input_type="amount", output_type="amount")
+
+# Distillation
+result3 = distiller.processMass(inputs=result2, input_type="amount", output_type="amount")
+
+# Dehydration
+final = dehydrator.processMass(inputs=result3, input_type="amount", output_type="full")
+
+print(f"Final ethanol: {final['amount']['ethanol']:.2f} kg")
+print(f"Final purity: {final['composition']['ethanol']:.2%}")
 ```
 
 ### Visualization Example
 ```python
-# Visualize the relationship between input sugar and output ethanol
+# Visualize the relationship between stored inputs and outputs
 fermenter.display(input="sugar", output="ethanol")
-
-# Visualize water content through distillation
-distiller.display(input="water", output="ethanol")
-```
-
-### Multiple Batch Processing
-```python
-# Process multiple batches with varying inputs
-multi_batch_inputs = {
-    "ethanol": [0, 0, 0],
-    "water": [2500, 3000, 3500],
-    "sugar": [800, 1000, 1200],
-    "fiber": [80, 100, 120]
-}
-
-# Process all batches through the system
-results = fermenter.iterateInputs(multi_batch_inputs)
-# Each component list will contain results for all three batches
 ```
 
 ## System Components
 
 ### System (Base Class)
 The base class for all process systems, providing:
-- Input/output tracking for all components
-- Mass function execution via `massFunction`
-- Batch iteration capabilities with `iterateInputs()`
+- Input/output tracking for mass and flow data
+- Conversion between mass and volumetric flow
+- Mass function execution via `processMass()` and `processFlow()`
+- Batch iteration capabilities with `iterateMassInputs()` and `iterateFlowInputs()`
 - Visualization with `display()`
 
 ### Fermentation
@@ -178,10 +273,80 @@ EthanolPlantModel/
 
 ## API Reference
 
-### System Methods
-- `iterateInputs(inputValues: dict) -> dict`: Process input batches and return outputs
-- `display(input: str, output: str)`: Visualize input vs output relationship
-- `convertMass()`: Placeholder for future mass conversion logic
+### Core Processing Methods
+
+#### `processMass(**kwargs)`
+Process mass inputs through the system.
+
+**Arguments:**
+- `inputs` (dict): Input values (format depends on `input_type`)
+- `input_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `output_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `total_mass` (float): Total mass (required for composition inputs)
+- `store_inputs` (bool): Whether to log inputs
+- `store_outputs` (bool): Whether to log outputs
+
+**Returns:** Processed outputs in specified format
+
+#### `processFlow(**kwargs)`
+Process volumetric flow inputs through the system.
+
+**Arguments:**
+- `inputs` (dict): Input flow values (format depends on `input_type`)
+- `input_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `output_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `total_flow` (float): Total flow rate in m³ (required for composition inputs)
+- `store_inputs` (bool): Whether to log inputs
+- `store_outputs` (bool): Whether to log outputs
+
+**Returns:** Processed flow outputs in specified format
+
+#### `iterateMassInputs(inputValues, **kwargs)`
+Process multiple sets of mass inputs iteratively.
+
+**Arguments:**
+- `inputValues` (dict): Component lists (format depends on `input_type`)
+- `input_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `output_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `total_mass_list` (list): List of total masses (required for composition inputs)
+
+**Returns:** Updated output log
+
+#### `iterateFlowInputs(inputValues, **kwargs)`
+Process multiple sets of flow inputs iteratively.
+
+**Arguments:**
+- `inputValues` (dict): Component flow lists (format depends on `input_type`)
+- `input_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `output_type` (str): `'amount'`, `'composition'`, or `'full'`
+- `total_flow_list` (list): List of total flows (required for composition inputs)
+
+**Returns:** Updated output log
+
+#### `display(input, output)`
+Visualize input vs output relationship from stored logs.
+
+**Arguments:**
+- `input` (str): Input variable name
+- `output` (str): Output variable name
+
+### Conversion Methods
+
+#### `flowToMass(**kwargs)`
+Convert volumetric flow to mass.
+
+**Arguments:**
+- `inputs` (dict): Flow values
+- `mode` (str): `'amount'` or `'composition'`
+- `total_flow` (float): Required for composition mode
+
+#### `massToFlow(**kwargs)`
+Convert mass to volumetric flow.
+
+**Arguments:**
+- `inputs` (dict): Mass values
+- `mode` (str): `'amount'` or `'composition'`
+- `total_mass` (float): Required for composition mode
 
 ### Process-Specific Methods
 - `Fermentation.ferment(input: dict) -> dict`: Execute fermentation mass balance
