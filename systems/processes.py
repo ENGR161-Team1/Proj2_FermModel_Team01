@@ -147,7 +147,7 @@ class System:
                 }
             }
         }
-        self.components = self.components
+        self.components = ["ethanol", "water", "sugar", "fiber"]
         self.efficiency = kwargs.get("efficiency", 1.0)
         self.massFunction = kwargs.get("massFunction", None)
         
