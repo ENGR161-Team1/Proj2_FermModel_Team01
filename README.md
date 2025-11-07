@@ -1,7 +1,7 @@
 # Ethanol Plant Model
 
 ## Overview
-This project contains a model of an ethanol production plant, developed as part of ENGR-16100 coursework. The model simulates the complete production pipeline from raw materials to high-purity ethanol through mass balance calculations and process efficiency modeling.
+This project contains a model of an ethanol production plant, developed as part of ENGR-16100 coursework. The model simulates the complete production pipeline from raw materials to high-purity ethanol through mass balance calculations, process efficiency modeling, and fluid transport dynamics.
 
 ## Description
 The model simulates four key stages of ethanol production:
@@ -23,6 +23,18 @@ The model simulates four key stages of ethanol production:
    - Produces high-purity ethanol
    - Efficiency-based water removal
 
+### Fluid Transport Components
+The model includes connector components that simulate fluid transport between process stages:
+
+- **Pipe**: Straight pipe segments with friction losses calculated using the Darcy-Weisbach equation
+- **Bend**: Pipe bends/elbows with energy losses proportional to flow velocity and bend geometry
+- **Valve**: Flow control valves with adjustable resistance coefficients
+
+These connectors handle:
+- Mass conservation (no mass loss during transport)
+- Energy dissipation due to friction, turbulence, and flow resistance
+- Density-based flow calculations
+
 ### Mass Balance Tracking
 The model tracks four components throughout the process:
 - **Ethanol**: Product concentration
@@ -34,6 +46,7 @@ Each `System` class maintains input and output histories for all components, ena
 
 ## Features
 - Mass and volumetric flow balance calculations for each process stage
+- Energy loss calculations for fluid transport (friction, bends, valves)
 - Configurable efficiency parameters for realistic simulations
 - Flexible input/output formats: amounts, compositions, or full data
 - Built-in visualization using Matplotlib
@@ -204,16 +217,88 @@ dehydrator.iterateFlowInputs(
 print(f"Output water compositions: {dehydrator.output_log['flow']['composition']['water']}")
 ```
 
-### Complete Pipeline Example
+### Using Connectors for Fluid Transport
 ```python
-# Chain multiple processes
+from systems.connectors import Pipe, Bend, Valve
+
+# Initialize a pipe with specific properties
+pipe = Pipe(
+    length=10.0,          # 10 meters
+    diameter=0.15,        # 15 cm diameter
+    friction_factor=0.02  # Darcy friction factor
+)
+
+# Calculate energy loss through the pipe
+input_energy = 1000  # Joules
+input_flow = 0.1     # m³/s
+input_mass = 78.9    # kg/s (ethanol at ~789 kg/m³)
+
+output_energy = pipe.pipeEnergyFunction(
+    input_flow=input_flow,
+    input_mass=input_mass,
+    input_energy=input_energy
+)
+
+print(f"Energy lost to friction: {input_energy - output_energy:.2f} J")
+
+# Initialize a bend
+bend = Bend(
+    bend_radius=0.5,    # 50 cm radius
+    bend_factor=0.9,    # 90% efficiency (10% energy loss)
+    diameter=0.15
+)
+
+# Calculate energy loss through the bend
+output_energy = bend.bendEnergyFunction(
+    input_flow=input_flow,
+    input_mass=input_mass,
+    input_energy=input_energy
+)
+
+# Initialize a valve
+valve = Valve(
+    resistance_coefficient=1.5,  # Partially closed valve
+    diameter=0.15
+)
+
+# Calculate energy loss through the valve
+output_energy = valve.valveEnergyFunction(
+    input_flow=input_flow,
+    input_mass=input_mass,
+    input_energy=input_energy
+)
+```
+
+### Complete Pipeline Example with Transport
+```python
+from systems.processes import Fermentation, Filtration, Distillation, Dehydration
+from systems.connectors import Pipe, Bend
+
+# Initialize process systems
+fermenter = Fermentation(efficiency=0.95)
+filter_system = Filtration(efficiency=0.90)
+distiller = Distillation(efficiency=0.98)
+dehydrator = Dehydration(efficiency=0.99)
+
+# Initialize connectors
+pipe1 = Pipe(length=5.0, diameter=0.1)
+bend1 = Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1)
+
+# Process through pipeline
 input_data = {"ethanol": 0, "water": 3000, "sugar": 1000, "fiber": 100}
 
 # Fermentation
 result1 = fermenter.processMass(inputs=input_data, input_type="amount", output_type="amount")
 
+# Transport through pipe (energy calculation)
+# Note: Connectors handle energy, mass is conserved
+pipe_output_mass = pipe1.pipeMassFunction(input_mass=sum(result1.values()))
+
 # Filtration
 result2 = filter_system.processMass(inputs=result1, input_type="amount", output_type="amount")
+
+# Transport through bend
+bend_output_mass = bend1.bendMassFunction(input_mass=sum(result2.values()))
 
 # Distillation
 result3 = distiller.processMass(inputs=result2, input_type="amount", output_type="amount")
@@ -223,12 +308,6 @@ final = dehydrator.processMass(inputs=result3, input_type="amount", output_type=
 
 print(f"Final ethanol: {final['amount']['ethanol']:.2f} kg")
 print(f"Final purity: {final['composition']['ethanol']:.2%}")
-```
-
-### Visualization Example
-```python
-# Visualize the relationship between stored inputs and outputs
-fermenter.display(input="sugar", output="ethanol")
 ```
 
 ## System Components
@@ -241,31 +320,60 @@ The base class for all process systems, providing:
 - Batch iteration capabilities with `iterateMassInputs()` and `iterateFlowInputs()`
 - Visualization with `display()`
 
-### Fermentation
+### Process Systems
+
+#### Fermentation
 - **Input**: Sugar, water, fiber
 - **Output**: Ethanol (51% × sugar × efficiency), unconverted sugar, water, fiber
 - **Efficiency effect**: Determines sugar conversion rate
 
-### Filtration
+#### Filtration
 - **Input**: All components from fermentation
 - **Output**: Ethanol, water, sugar pass through; fiber reduced by efficiency
 - **Efficiency effect**: Determines fiber removal rate
 
-### Distillation
+#### Distillation
 - **Input**: All components from filtration
 - **Output**: Concentrated ethanol with some carry-over impurities
 - **Efficiency effect**: Determines purity of separation
 
-### Dehydration
+#### Dehydration
 - **Input**: All components from distillation
 - **Output**: High-purity ethanol with reduced water content
 - **Efficiency effect**: Determines water removal rate
+
+### Connector Components
+
+#### Connector (Base Class)
+Base class for all fluid transport connectors, providing:
+- Density calculation from mass and flow rates
+- Configurable diameter and cross-sectional area
+- Mass and energy function interfaces
+
+#### Pipe
+Represents straight pipe segments with friction losses.
+- **Parameters**: length, diameter, friction_factor
+- **Energy Loss**: Calculated using Darcy-Weisbach equation
+- **Mass**: Conserved (no mass loss)
+
+#### Bend
+Represents pipe bends/elbows with direction change losses.
+- **Parameters**: bend_radius, bend_factor, diameter
+- **Energy Loss**: Based on kinetic energy and bend inefficiency
+- **Mass**: Conserved (no mass loss)
+
+#### Valve
+Represents flow control valves with resistance.
+- **Parameters**: resistance_coefficient, diameter
+- **Energy Loss**: Proportional to dynamic pressure and resistance
+- **Mass**: Conserved (no mass loss)
 
 ## Project Structure
 ```
 EthanolPlantModel/
 ├── systems/
-│   └── processes.py    # Core system components
+│   ├── processes.py    # Core process systems
+│   └── connectors.py   # Fluid transport connectors
 ├── LICENSE
 ├── README.md
 └── pyproject.toml
@@ -347,6 +455,79 @@ Convert mass to volumetric flow.
 - `inputs` (dict): Mass values
 - `mode` (str): `'amount'` or `'composition'`
 - `total_mass` (float): Required for composition mode
+
+### Connector Methods
+
+#### Connector Base Class
+
+##### `processDensity(**kwargs)`
+Calculate fluid density from mass and volumetric flow rates.
+
+**Arguments:**
+- `input_flow` (float): Volumetric flow rate in m³/s
+- `input_mass` (float): Mass flow rate in kg/s
+
+**Returns:** Density in kg/m³
+
+#### Pipe Class
+
+##### `pipeEnergyFunction(**kwargs)`
+Calculate energy loss due to friction in a straight pipe.
+
+**Arguments:**
+- `input_flow` (float): Volumetric flow rate in m³/s
+- `input_mass` (float): Mass flow rate in kg/s
+- `input_energy` (float): Input energy in Joules
+
+**Returns:** Output energy after friction losses (Joules)
+
+##### `pipeMassFunction(**kwargs)`
+Calculate mass flow through the pipe (conserved).
+
+**Arguments:**
+- `input_mass` (float): Input mass flow rate in kg/s
+
+**Returns:** Output mass flow rate in kg/s
+
+#### Bend Class
+
+##### `bendEnergyFunction(**kwargs)`
+Calculate energy loss in a pipe bend due to flow direction change.
+
+**Arguments:**
+- `input_flow` (float): Volumetric flow rate in m³/s
+- `input_mass` (float): Mass flow rate in kg/s
+- `input_energy` (float): Input energy in Joules
+
+**Returns:** Output energy after bend losses (Joules)
+
+##### `bendMassFunction(**kwargs)`
+Calculate mass flow through the bend (conserved).
+
+**Arguments:**
+- `input_mass` (float): Input mass flow rate in kg/s
+
+**Returns:** Output mass flow rate in kg/s
+
+#### Valve Class
+
+##### `valveEnergyFunction(**kwargs)`
+Calculate energy loss through a valve.
+
+**Arguments:**
+- `input_flow` (float): Volumetric flow rate in m³/s
+- `input_mass` (float): Mass flow rate in kg/s
+- `input_energy` (float): Input energy in Joules
+
+**Returns:** Output energy after valve losses (Joules)
+
+##### `valveMassFunction(**kwargs)`
+Calculate mass flow through the valve (conserved).
+
+**Arguments:**
+- `input_mass` (float): Input mass flow rate in kg/s
+
+**Returns:** Output mass flow rate in kg/s
 
 ### Process-Specific Methods
 - `Fermentation.ferment(input: dict) -> dict`: Execute fermentation mass balance
