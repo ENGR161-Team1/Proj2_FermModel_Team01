@@ -412,6 +412,140 @@ class System:
             }
     
 
+    def iterateMassInputs(self, inputValues=dict(), **kwargs):
+        """
+        Process multiple sets of mass inputs iteratively.
+        Processes each input through the mass function and stores results in logs.
+        
+        Args:
+            inputValues: Dictionary containing input data. Format depends on input_type:
+                - For 'amount': {component: [list of values]}
+                - For 'composition': {component: [list of fractions]} + total_mass_list
+                - For 'full': {"amount": {component: [values]}, "composition": {component: [fractions]}}
+            input_type: 'amount', 'composition', or 'full'
+            output_type: 'amount', 'composition', or 'full'
+            total_mass_list: List of total masses (required when input_type is 'composition')
+        
+        Returns:
+            Updated output log containing all processed results
+        """
+        input_type = kwargs.get("input_type", "amount")
+        output_type = kwargs.get("output_type", "full")
+        total_mass_list = kwargs.get("total_mass_list", None)
+        
+        # Validate input_type
+        if input_type not in ["amount", "composition", "full"]:
+            raise ValueError("input_type must be either 'amount', 'composition', or 'full'")
+        
+        # Determine number of iterations based on input structure
+        if input_type == "full":
+            num_iterations = len(inputValues["amount"][self.components[0]])
+        else:
+            num_iterations = len(inputValues[self.components[0]])
+        
+        # Validate total_mass_list if required
+        if input_type == "composition":
+            if total_mass_list is None:
+                raise ValueError("total_mass_list must be provided when input_type is 'composition'")
+            if len(total_mass_list) != num_iterations:
+                raise ValueError("Length of total_mass_list must match number of input sets")
+        
+        # Process each set of inputs
+        for i in range(num_iterations):
+            # Build input dictionary for this iteration
+            if input_type == "amount":
+                input_dict = {component: inputValues[component][i] for component in self.components if component in inputValues}
+                total_mass = None
+            elif input_type == "composition":
+                input_dict = {component: inputValues[component][i] for component in self.components if component in inputValues}
+                total_mass = total_mass_list[i]
+            else:  # full
+                input_dict = {
+                    "amount": {component: inputValues["amount"][component][i] for component in self.components if component in inputValues["amount"]},
+                    "composition": {component: inputValues["composition"][component][i] for component in self.components if component in inputValues["composition"]}
+                }
+                total_mass = None
+            
+            # Process this input set
+            self.processMass(
+                inputs=input_dict,
+                input_type=input_type,
+                output_type=output_type,
+                total_mass=total_mass,
+                store_inputs=True,
+                store_outputs=True
+            )
+        
+        return self.output_log
+    
+
+    def iterateFlowInputs(self, inputValues=dict(), **kwargs):
+        """
+        Process multiple sets of flow inputs iteratively.
+        Processes each input through the flow function and stores results in logs.
+        
+        Args:
+            inputValues: Dictionary containing input data. Format depends on input_type:
+                - For 'amount': {component: [list of values]}
+                - For 'composition': {component: [list of fractions]} + total_flow_list
+                - For 'full': {"amount": {component: [values]}, "composition": {component: [fractions]}}
+            input_type: 'amount', 'composition', or 'full'
+            output_type: 'amount', 'composition', or 'full'
+            total_flow_list: List of total flows (required when input_type is 'composition')
+        
+        Returns:
+            Updated output log containing all processed results
+        """        
+        input_type = kwargs.get("input_type", "amount")
+        output_type = kwargs.get("output_type", "full")
+        total_flow_list = kwargs.get("total_flow_list", None)
+        
+        # Validate input_type
+        if input_type not in ["amount", "composition", "full"]:
+            raise ValueError("input_type must be either 'amount', 'composition', or 'full'")
+        
+        # Determine number of iterations based on input structure
+        if input_type == "full":
+            num_iterations = len(inputValues["amount"][self.components[0]])
+        else:
+            num_iterations = len(inputValues[self.components[0]])
+        
+        # Validate total_flow_list if required
+        if input_type == "composition":
+            if total_flow_list is None:
+                raise ValueError("total_flow_list must be provided when input_type is 'composition'")
+            if len(total_flow_list) != num_iterations:
+                raise ValueError("Length of total_flow_list must match number of input sets")
+        
+        # Process each set of inputs
+        for i in range(num_iterations):
+            # Build input dictionary for this iteration
+            if input_type == "amount":
+                input_dict = {component: inputValues[component][i] for component in self.components if component in inputValues}
+                total_flow = None
+            elif input_type == "composition":
+                input_dict = {component: inputValues[component][i] for component in self.components if component in inputValues}
+                total_flow = total_flow_list[i]
+            else:  # full
+                input_dict = {
+                    "amount": {component: inputValues["amount"][component][i] for component in self.components if component in inputValues["amount"]},
+                    "composition": {component: inputValues["composition"][component][i] for component in self.components if component in inputValues["composition"]}
+                }
+                total_flow = None
+            
+            # Process this input set
+            self.processFlow(
+                inputs=input_dict,
+                input_type=input_type,
+                output_type=output_type,
+                total_flow=total_flow,
+                store_inputs=True,
+                store_outputs=True
+            )
+        
+        return self.output_log
+        
+
     def iterateInputs(self, inputValues=dict(), **kwargs):
         """
         Process multiple sets of inputs iteratively.
@@ -435,6 +569,7 @@ class System:
                 self.output_log[key].append(output_dict[key])
 
         return self.output_log 
+
     
     def display(self, input=str, output=str):
         """
