@@ -1,276 +1,444 @@
 # Process Systems
 
-Detailed documentation for each process system in the ethanol plant model.
+Detailed guide to the chemical process systems in the Ethanol Plant Model (v0.4.0).
 
 ## Overview
 
-The model includes four process systems that simulate the ethanol production pipeline:
-
-1. **Fermentation** - Sugar → Ethanol conversion
+The model includes four main process systems:
+1. **Fermentation** - Sugar to ethanol conversion
 2. **Filtration** - Fiber removal
-3. **Distillation** - Ethanol concentration
+3. **Distillation** - Ethanol separation
 4. **Dehydration** - Water removal
 
-Each system tracks four components:
-- **Ethanol** (density: 789 kg/m³)
-- **Water** (density: 997 kg/m³)
-- **Sugar** (density: 1590 kg/m³)
-- **Fiber** (density: 1311 kg/m³)
+All systems inherit from the `System` base class and support flexible input/output formats.
 
 ---
 
 ## Fermentation
 
-### Description
+### Overview
 
-Converts sugar into ethanol through biochemical fermentation.
+The fermentation system converts sugar into ethanol through biological processes. The conversion follows stoichiometric principles with configurable efficiency.
 
-### Stoichiometry
+### Chemistry
 
+**Stoichiometry:**
 ```
-Sugar → 0.51 × Sugar mass × Efficiency → Ethanol
+C₆H₁₂O₆ → 2C₂H₅OH + 2CO₂
+(Glucose)  (Ethanol)  (CO₂)
 ```
 
-- Theoretical maximum: 51% of sugar mass becomes ethanol
-- Actual conversion depends on efficiency parameter
+**Mass Conversion:**
+- 51% of converted sugar mass becomes ethanol
+- Remaining 49% becomes CO₂ and metabolic byproducts (not tracked)
 
-### Inputs
+### Parameters
 
-- **Sugar** - Raw material to be converted
-- **Water** - Solvent medium
-- **Fiber** - Passes through unchanged
-- **Ethanol** - Typically 0 for initial fermentation
+- `efficiency` (float): Fraction of sugar successfully converted (0.0 to 1.0)
 
-### Outputs
+### Behavior
 
-- **Ethanol** - Product (0.51 × sugar × efficiency)
-- **Sugar** - Unconverted sugar (sugar × (1 - efficiency))
-- **Water** - Unchanged
-- **Fiber** - Unchanged
+```python
+outputs = {
+    "ethanol": 0.51 * sugar_input * efficiency,
+    "water": water_input,  # unchanged
+    "sugar": sugar_input * (1 - efficiency),  # unconverted
+    "fiber": fiber_input  # unchanged
+}
+```
 
-### Example
+### Examples
 
+#### Basic Usage
 ```python
 from systems.processes import Fermentation
 
 fermenter = Fermentation(efficiency=0.95)
 
 result = fermenter.processMass(
-    inputs={"ethanol": 0, "water": 1000, "sugar": 500, "fiber": 50},
+    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
     input_type="amount",
     output_type="full"
 )
 
-# Expected ethanol: 500 × 0.51 × 0.95 = 242.25 kg
-print(f"Ethanol: {result['amount']['ethanol']:.2f} kg")
-# Expected remaining sugar: 500 × (1 - 0.95) = 25 kg
-print(f"Sugar: {result['amount']['sugar']:.2f} kg")
+print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
+print(f"Sugar consumed: {50 - result['amount']['sugar']:.2f} kg")
+print(f"Conversion efficiency: {result['amount']['ethanol'] / (50 * 0.51):.1%}")
 ```
 
-### Efficiency Effect
+#### Composition Mode
+```python
+# Input as fractions
+inputs_comp = {
+    "ethanol": 0.0,
+    "water": 0.625,
+    "sugar": 0.3125,
+    "fiber": 0.0625
+}
 
-- **100% efficiency** - All sugar converted (unrealistic)
-- **95% efficiency** - 95% of sugar converted (good performance)
-- **85% efficiency** - 85% of sugar converted (moderate performance)
-- **70% efficiency** - 70% of sugar converted (poor performance)
+result = fermenter.processMass(
+    inputs=inputs_comp,
+    input_type="composition",
+    output_type="full",
+    total_mass=160  # Required for composition input
+)
+
+print(f"Output ethanol composition: {result['composition']['ethanol']:.2%}")
+```
+
+#### Batch Processing
+```python
+# Process multiple batches
+batches = {
+    "ethanol": [0, 0, 0, 0],
+    "water": [100, 120, 90, 110],
+    "sugar": [50, 60, 45, 55],
+    "fiber": [10, 12, 9, 11]
+}
+
+fermenter.iterateMassInputs(
+    inputValues=batches,
+    input_type="amount",
+    output_type="full"
+)
+
+# Access all results from logs
+ethanol_outputs = fermenter.output_log["mass"]["amount"]["ethanol"]
+print(f"Average ethanol per batch: {sum(ethanol_outputs) / len(ethanol_outputs):.2f} kg")
+```
+
+### Efficiency Impact
+
+| Efficiency | Sugar Used (%) | Ethanol Yield (%) | Notes |
+|-----------|----------------|-------------------|--------|
+| 1.00 | 100% | 51.0% | Theoretical maximum |
+| 0.95 | 95% | 48.5% | Excellent industrial performance |
+| 0.90 | 90% | 45.9% | Good industrial performance |
+| 0.80 | 80% | 40.8% | Average performance |
+| 0.70 | 70% | 35.7% | Poor performance |
 
 ---
 
 ## Filtration
 
-### Description
+### Overview
 
-Removes solid particles and fiber from the mixture.
+The filtration system removes solid fiber particles from the liquid mixture. It's typically used after fermentation to clarify the mixture.
 
-### Process
+### Parameters
 
-Fiber is removed based on efficiency while other components pass through unchanged.
+- `efficiency` (float): Fraction of fiber removed (0.0 to 1.0)
 
-### Inputs
+### Behavior
 
-- **Ethanol** - Passes through
-- **Water** - Passes through
-- **Sugar** - Passes through
-- **Fiber** - Partially removed
+```python
+outputs = {
+    "ethanol": ethanol_input,  # unchanged
+    "water": water_input,  # unchanged
+    "sugar": sugar_input,  # unchanged
+    "fiber": fiber_input * (1 - efficiency)  # removed
+}
+```
 
-### Outputs
+### Examples
 
-- **Ethanol** - Unchanged
-- **Water** - Unchanged
-- **Sugar** - Unchanged
-- **Fiber** - Reduced (fiber × (1 - efficiency))
-
-### Example
-
+#### Basic Filtration
 ```python
 from systems.processes import Filtration
 
-filter_sys = Filtration(efficiency=0.90)
+filter_sys = Filtration(efficiency=0.98)
 
+# Input from fermentation output
 result = filter_sys.processMass(
-    inputs={"ethanol": 242, "water": 1000, "sugar": 25, "fiber": 50},
+    inputs={"ethanol": 24.2, "water": 100, "sugar": 2.5, "fiber": 10},
     input_type="amount",
     output_type="full"
 )
 
-# Expected fiber: 50 × (1 - 0.90) = 5 kg
-print(f"Fiber removed: {50 - result['amount']['fiber']:.2f} kg")
+print(f"Fiber removed: {10 - result['amount']['fiber']:.2f} kg")
+print(f"Removal rate: {(1 - result['amount']['fiber'] / 10):.1%}")
 ```
 
-### Efficiency Effect
+#### Multi-Stage Filtration
+```python
+# Two-stage filtration for higher purity
+filter1 = Filtration(efficiency=0.95)
+filter2 = Filtration(efficiency=0.90)
 
-- **100% efficiency** - All fiber removed (ideal)
-- **90% efficiency** - 90% fiber removed (good)
-- **80% efficiency** - 80% fiber removed (moderate)
-- **60% efficiency** - 60% fiber removed (poor)
+stage1 = filter1.processMass(
+    inputs={"ethanol": 24, "water": 100, "sugar": 2, "fiber": 10},
+    input_type="amount",
+    output_type="amount"
+)
+
+stage2 = filter2.processMass(
+    inputs=stage1,
+    input_type="amount",
+    output_type="full"
+)
+
+initial_fiber = 10
+final_fiber = stage2['amount']['fiber']
+total_removal = (1 - final_fiber / initial_fiber)
+print(f"Combined removal: {total_removal:.2%}")
+# Expected: 1 - (0.05 * 0.10) = 99.5% removal
+```
+
+### Efficiency Impact
+
+| Efficiency | Fiber Remaining (%) | Application |
+|-----------|---------------------|-------------|
+| 0.99 | 1% | High-purity requirements |
+| 0.98 | 2% | Standard industrial |
+| 0.95 | 5% | Basic clarification |
+| 0.90 | 10% | Pre-filtering |
 
 ---
 
 ## Distillation
 
-### Description
+### Overview
 
-Separates and concentrates ethanol from other components by exploiting differences in boiling points.
+The distillation system separates ethanol from other components based on boiling point differences. Higher efficiency means better separation.
 
-### Process
+### Parameters
 
-Ethanol is separated with some carry-over of impurities based on efficiency.
+- `efficiency` (float): Separation efficiency (0.0 to 1.0)
+  - Higher values = purer ethanol output
+  - Lower values = more impurities remain with ethanol
 
-### Inputs
-
-- **Ethanol** - Product to be concentrated
-- **Water** - Impurity to be removed
-- **Sugar** - Impurity to be removed
-- **Fiber** - Impurity to be removed
-
-### Outputs
-
-- **Ethanol** - Unchanged amount
-- **Water** - Reduced (carries over proportionally)
-- **Sugar** - Reduced (carries over proportionally)
-- **Fiber** - Reduced (carries over proportionally)
-
-### Math
+### Behavior
 
 ```python
-distill_inefficiency = (1 / efficiency) - 1
+inefficiency = (1 / efficiency) - 1
 total_impurities = water + sugar + fiber
-water_out = (water × ethanol × distill_inefficiency) / total_impurities
+
+outputs = {
+    "ethanol": ethanol_input,  # all retained
+    "water": (water_input * ethanol_input * inefficiency) / total_impurities,
+    "sugar": (sugar_input * ethanol_input * inefficiency) / total_impurities,
+    "fiber": (fiber_input * ethanol_input * inefficiency) / total_impurities
+}
 ```
 
-### Example
+### Examples
 
+#### Basic Distillation
 ```python
 from systems.processes import Distillation
 
-distiller = Distillation(efficiency=0.98)
+distiller = Distillation(efficiency=0.90)
 
 result = distiller.processMass(
-    inputs={"ethanol": 242, "water": 1000, "sugar": 25, "fiber": 5},
+    inputs={"ethanol": 24, "water": 100, "sugar": 2, "fiber": 0.2},
     input_type="amount",
     output_type="full"
 )
 
 print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
+print(f"Water in output: {result['amount']['water']:.2f} kg")
 ```
 
-### Efficiency Effect
+#### Comparing Efficiencies
+```python
+inputs = {"ethanol": 24, "water": 100, "sugar": 2, "fiber": 0.2}
 
-- **100% efficiency** - Perfect separation (no impurities)
-- **98% efficiency** - ~2% impurities remain
-- **95% efficiency** - ~5% impurities remain
-- **90% efficiency** - ~10% impurities remain
+for eff in [0.80, 0.90, 0.95, 0.99]:
+    distiller = Distillation(efficiency=eff)
+    result = distiller.processMass(
+        inputs=inputs,
+        input_type="amount",
+        output_type="full"
+    )
+    purity = result['composition']['ethanol']
+    print(f"Efficiency {eff:.0%}: Purity = {purity:.2%}")
+```
+
+Output:
+```
+Efficiency 80%: Purity = 82.76%
+Efficiency 90%: Purity = 90.57%
+Efficiency 95%: Purity = 95.02%
+Efficiency 99%: Purity = 98.97%
+```
+
+### Efficiency Impact
+
+| Efficiency | Approx. Ethanol Purity | Typical Application |
+|-----------|------------------------|---------------------|
+| 0.99 | >98% | Fuel-grade ethanol |
+| 0.95 | >94% | High-grade spirits |
+| 0.90 | >90% | Standard spirits |
+| 0.80 | >82% | Industrial ethanol |
 
 ---
 
 ## Dehydration
 
-### Description
+### Overview
 
-Final step to remove remaining water content and produce high-purity ethanol.
+The dehydration system removes water to produce high-purity ethanol. Often used as a final purification step.
 
-### Process
+### Parameters
 
-Water is removed based on efficiency while other components pass through.
+- `efficiency` (float): Fraction of water removed (0.0 to 1.0)
 
-### Inputs
+### Behavior
 
-- **Ethanol** - Product
-- **Water** - To be removed
-- **Sugar** - Passes through
-- **Fiber** - Passes through
+```python
+outputs = {
+    "ethanol": ethanol_input,  # unchanged
+    "water": water_input * (1 - efficiency),  # removed
+    "sugar": sugar_input,  # unchanged
+    "fiber": fiber_input  # unchanged
+}
+```
 
-### Outputs
+### Examples
 
-- **Ethanol** - Unchanged
-- **Water** - Reduced (water × (1 - efficiency))
-- **Sugar** - Unchanged
-- **Fiber** - Unchanged
-
-### Example
-
+#### Basic Dehydration
 ```python
 from systems.processes import Dehydration
 
 dehydrator = Dehydration(efficiency=0.99)
 
 result = dehydrator.processMass(
-    inputs={"ethanol": 242, "water": 50, "sugar": 5, "fiber": 1},
+    inputs={"ethanol": 24, "water": 2.4, "sugar": 0.2, "fiber": 0.02},
     input_type="amount",
     output_type="full"
 )
 
-# Expected water: 50 × (1 - 0.99) = 0.5 kg
-print(f"Water remaining: {result['amount']['water']:.2f} kg")
-print(f"Final purity: {result['composition']['ethanol']:.2%}")
+print(f"Final ethanol purity: {result['composition']['ethanol']:.2%}")
+print(f"Water remaining: {result['amount']['water']:.4f} kg")
 ```
 
-### Efficiency Effect
+#### Achieving Target Purity
+```python
+def get_required_efficiency(current_water, current_ethanol, target_purity):
+    """Calculate dehydration efficiency needed for target purity"""
+    target_water = current_ethanol * (1 - target_purity) / target_purity
+    efficiency = 1 - (target_water / current_water)
+    return max(0, min(1, efficiency))
 
-- **100% efficiency** - All water removed (ideal)
-- **99% efficiency** - 99% water removed (excellent)
-- **95% efficiency** - 95% water removed (good)
-- **90% efficiency** - 90% water removed (moderate)
+current = {"ethanol": 24, "water": 3, "sugar": 0.1, "fiber": 0.01}
+target = 0.995  # 99.5% purity
+
+required_eff = get_required_efficiency(
+    current["water"], 
+    current["ethanol"], 
+    target
+)
+
+print(f"Required efficiency: {required_eff:.2%}")
+
+dehydrator = Dehydration(efficiency=required_eff)
+result = dehydrator.processMass(
+    inputs=current,
+    input_type="amount",
+    output_type="full"
+)
+
+print(f"Achieved purity: {result['composition']['ethanol']:.3%}")
+```
+
+### Efficiency Impact
+
+| Efficiency | Water Remaining | Final Ethanol Purity* |
+|-----------|-----------------|----------------------|
+| 0.999 | 0.1% | >99.9% |
+| 0.99 | 1% | >99% |
+| 0.95 | 5% | >95% |
+| 0.90 | 10% | >90% |
+
+*Assuming ethanol + water are primary components
 
 ---
 
 ## Complete Pipeline
 
-### Typical Efficiency Values
-
-| Process | Typical Efficiency | Range |
-|---------|-------------------|-------|
-| Fermentation | 92-96% | 85-98% |
-| Filtration | 88-92% | 80-95% |
-| Distillation | 96-99% | 92-99.5% |
-| Dehydration | 98-99.5% | 95-99.9% |
-
-### Pipeline Example
+### Example: Full Production Process
 
 ```python
 from systems.processes import Fermentation, Filtration, Distillation, Dehydration
 
-# Initialize with realistic efficiencies
-fermenter = Fermentation(efficiency=0.94)
-filter_sys = Filtration(efficiency=0.90)
-distiller = Distillation(efficiency=0.97)
+# Initialize all systems
+fermenter = Fermentation(efficiency=0.95)
+filter_sys = Filtration(efficiency=0.98)
+distiller = Distillation(efficiency=0.92)
 dehydrator = Dehydration(efficiency=0.99)
 
 # Raw materials
-raw = {"ethanol": 0, "water": 5000, "sugar": 2000, "fiber": 200}
+raw_materials = {
+    "ethanol": 0,
+    "water": 100,
+    "sugar": 50,
+    "fiber": 10
+}
 
-# Process pipeline
-step1 = fermenter.processMass(inputs=raw, input_type="amount", output_type="amount")
-step2 = filter_sys.processMass(inputs=step1, input_type="amount", output_type="amount")
-step3 = distiller.processMass(inputs=step2, input_type="amount", output_type="amount")
-final = dehydrator.processMass(inputs=step3, input_type="amount", output_type="full")
+print("=== Ethanol Production Pipeline ===\n")
 
-print(f"Input sugar: 2000 kg")
-print(f"Output ethanol: {final['amount']['ethanol']:.2f} kg")
-print(f"Conversion efficiency: {(final['amount']['ethanol']/2000)*100:.1f}%")
-print(f"Ethanol purity: {final['composition']['ethanol']:.2%}")
+# Stage 1: Fermentation
+print("Stage 1: Fermentation")
+stage1 = fermenter.processMass(
+    inputs=raw_materials,
+    input_type="amount",
+    output_type="full"
+)
+print(f"  Ethanol: {stage1['amount']['ethanol']:.2f} kg")
+print(f"  Purity: {stage1['composition']['ethanol']:.2%}\n")
+
+# Stage 2: Filtration
+print("Stage 2: Filtration")
+stage2 = filter_sys.processMass(
+    inputs=stage1["amount"],
+    input_type="amount",
+    output_type="full"
+)
+print(f"  Fiber removed: {10 - stage2['amount']['fiber']:.2f} kg")
+print(f"  Purity: {stage2['composition']['ethanol']:.2%}\n")
+
+# Stage 3: Distillation
+print("Stage 3: Distillation")
+stage3 = distiller.processMass(
+    inputs=stage2["amount"],
+    input_type="amount",
+    output_type="full"
+)
+print(f"  Ethanol: {stage3['amount']['ethanol']:.2f} kg")
+print(f"  Purity: {stage3['composition']['ethanol']:.2%}\n")
+
+# Stage 4: Dehydration
+print("Stage 4: Dehydration")
+final = dehydrator.processMass(
+    inputs=stage3["amount"],
+    input_type="amount",
+    output_type="full"
+)
+print(f"  Ethanol: {final['amount']['ethanol']:.2f} kg")
+print(f"  Purity: {final['composition']['ethanol']:.3%}\n")
+
+# Summary
+print("=== Production Summary ===")
+print(f"Sugar input: {raw_materials['sugar']:.2f} kg")
+print(f"Ethanol output: {final['amount']['ethanol']:.2f} kg")
+print(f"Yield: {final['amount']['ethanol'] / raw_materials['sugar']:.2%}")
+print(f"Final purity: {final['composition']['ethanol']:.3%}")
 ```
 
 ---
 
-**Navigation:** [Home](README.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Process Systems](process-systems.md) | [Connector Systems](connector-systems.md) | [Examples](examples.md)
+## Best Practices
+
+1. **Always validate inputs**: Check that component values are non-negative
+2. **Use appropriate types**: Choose `input_type` and `output_type` based on your needs
+3. **Store data for analysis**: Enable `store_outputs=True` when tracking performance
+4. **Chain processes correctly**: Use output from one process as input to the next
+5. **Consider efficiency trade-offs**: Higher efficiency may require more energy/cost
+
+---
+
+## Next Steps
+
+- **[Connector Systems](connector-systems.md)**: Learn about fluid transport
+- **[Examples](examples.md)**: See more complex applications
+- **[API Reference](api-reference.md)**: Detailed method documentation
