@@ -37,6 +37,19 @@ uv pip install .
 
 ## Basic Usage
 
+### Importing Components
+
+```python
+# Import process systems
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
+
+# Import the base Process class if needed
+from systems.process import Process
+
+# Import connector systems
+from systems.connectors import Pipe, Bend, Valve
+```
+
 ### Simple Fermentation Example
 
 ```python

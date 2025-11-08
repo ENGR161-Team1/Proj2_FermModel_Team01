@@ -235,7 +235,33 @@ system.display(input="sugar", output="ethanol")
 
 ## Process Systems
 
-### `Fermentation(efficiency)`
+Module: `systems.process` (base class) and `systems.processors` (implementations)
+
+### Base Class: Process
+
+The `Process` class is the foundation for all process systems in the ethanol plant model.
+
+**Location:** `systems/process.py`
+
+```python
+from systems.process import Process
+```
+
+#### Constructor
+
+```python
+Process(**kwargs)
+```
+
+---
+
+### Fermentation
+
+**Location:** `systems/processors.py`
+
+```python
+from systems.processors import Fermentation
+```
 
 Converts sugar to ethanol through fermentation.
 
@@ -260,7 +286,13 @@ result = fermenter.processMass(
 
 ---
 
-### `Filtration(efficiency)`
+### Filtration
+
+**Location:** `systems/processors.py`
+
+```python
+from systems.processors import Filtration
+```
 
 Removes fiber from the mixture.
 
@@ -284,7 +316,13 @@ result = filter_sys.processMass(
 
 ---
 
-### `Distillation(efficiency)`
+### Distillation
+
+**Location:** `systems/processors.py`
+
+```python
+from systems.processors import Distillation
+```
 
 Separates ethanol from impurities.
 
@@ -309,7 +347,13 @@ result = distiller.processMass(
 
 ---
 
-### `Dehydration(efficiency)`
+### Dehydration
+
+**Location:** `systems/processors.py`
+
+```python
+from systems.processors import Dehydration
+```
 
 Removes water from ethanol.
 

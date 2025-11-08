@@ -19,7 +19,7 @@ Practical examples demonstrating common use cases for the Ethanol Plant Model.
 Process a single batch through fermentation.
 
 ```python
-from systems.processes import Fermentation
+from systems.processors import Fermentation
 
 # Create system
 fermenter = Fermentation(efficiency=0.95)
@@ -53,7 +53,8 @@ print(f"Ethanol composition: {result['composition']['ethanol']:.2%}")
 Process materials through all four stages.
 
 ```python
-from systems.processes import Fermentation, Filtration, Distillation, Dehydration
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
+from systems.connectors import Pipe
 
 # Initialize systems
 fermenter = Fermentation(efficiency=0.94)
@@ -125,7 +126,7 @@ print(f"\nOverall Efficiency: {overall_efficiency:.1f}%")
 Process multiple batches and track results.
 
 ```python
-from systems.processes import Fermentation
+from systems.processors import Fermentation
 
 fermenter = Fermentation(efficiency=0.95)
 
@@ -171,7 +172,7 @@ print(f"  Total: {sum(ethanol_outputs):.2f} kg")
 Use fractional compositions instead of absolute amounts.
 
 ```python
-from systems.processes import Distillation
+from systems.processors import Distillation
 
 distiller = Distillation(efficiency=0.98)
 
@@ -216,7 +217,7 @@ print(f"\nPurity increase: {purity_increase:.2f}x")
 Work with volumetric flow rates instead of masses.
 
 ```python
-from systems.processes import Fermentation
+from systems.processors import Fermentation
 
 fermenter = Fermentation(efficiency=0.95)
 
@@ -259,7 +260,7 @@ print(f"  Change: {total_out - total_in:.3f} m³ ({((total_out/total_in)-1)*100:
 Model energy losses during fluid transport.
 
 ```python
-from systems.processes import Fermentation, Filtration
+from systems.processors import Fermentation, Filtration
 from systems.connectors import Pipe, Bend, Valve
 
 # Process systems
@@ -341,7 +342,7 @@ print(f"Transport efficiency: {(energy_after_valve/initial_energy)*100:.1f}%")
 Track and visualize process data over multiple runs.
 
 ```python
-from systems.processes import Fermentation
+from systems.processors import Fermentation
 import matplotlib.pyplot as plt
 
 fermenter = Fermentation(efficiency=0.95)

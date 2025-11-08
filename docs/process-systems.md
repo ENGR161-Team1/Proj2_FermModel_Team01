@@ -14,6 +14,47 @@ All systems inherit from the `System` base class and support flexible input/outp
 
 ---
 
+## Architecture
+
+All process systems inherit from the base `Process` class, which provides:
+
+- **Modularity**: Each process is a separate class, allowing for independent development and testing.
+- **Flexibility**: Easy to add new processes or modify existing ones.
+- **Maintainability**: Clear separation of concerns, with each class handling a specific part of the process.
+
+### Module Structure
+
+- **`systems/process.py`** - Contains the base `Process` class
+- **`systems/processors.py`** - Contains all process implementations:
+  - `Fermentation`
+  - `Filtration`
+  - `Distillation`
+  - `Dehydration`
+
+---
+
+## Process Class (Base)
+
+The `Process` class is defined in `systems/process.py` and serves as the foundation for all processing units.
+
+```python
+from systems.process import Process
+```
+
+### Key Methods
+
+- `processMass(inputs, input_type, output_type, ...)`: Main method to process mass inputs.
+- `iterateMassInputs(inputValues, ...)`: Process multiple sets of inputs (e.g., batch processing).
+- `setEfficiency(new_efficiency)`: Update the efficiency parameter.
+
+### Properties
+
+- `efficiency`: Fraction representing the efficiency of the process (0.0 to 1.0).
+- `input_units`: Expected units for mass inputs (e.g., "amount", "composition").
+- `output_units`: Units for the processed outputs.
+
+---
+
 ## Fermentation
 
 ### Overview
@@ -51,7 +92,7 @@ outputs = {
 
 #### Basic Usage
 ```python
-from systems.processes import Fermentation
+from systems.processors import Fermentation
 
 fermenter = Fermentation(efficiency=0.95)
 
@@ -144,7 +185,7 @@ outputs = {
 
 #### Basic Filtration
 ```python
-from systems.processes import Filtration
+from systems.processors import Filtration
 
 filter_sys = Filtration(efficiency=0.98)
 
@@ -225,7 +266,7 @@ outputs = {
 
 #### Basic Distillation
 ```python
-from systems.processes import Distillation
+from systems.processors import Distillation
 
 distiller = Distillation(efficiency=0.90)
 
@@ -298,7 +339,7 @@ outputs = {
 
 #### Basic Dehydration
 ```python
-from systems.processes import Dehydration
+from systems.processors import Dehydration
 
 dehydrator = Dehydration(efficiency=0.99)
 
@@ -359,7 +400,7 @@ print(f"Achieved purity: {result['composition']['ethanol']:.3%}")
 ### Example: Full Production Process
 
 ```python
-from systems.processes import Fermentation, Filtration, Distillation, Dehydration
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
 
 # Initialize all systems
 fermenter = Fermentation(efficiency=0.95)
