@@ -119,3 +119,7 @@ print(f"Final purity: {final['composition']['ethanol']:.2%}")
 - [API Reference](api-reference.md) - Explore all available methods
 - [Process Systems](process-systems.md) - Learn about each process stage
 - [Examples](examples.md) - See more practical examples
+
+---
+
+**Navigation:** [Home](index.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Process Systems](process-systems.md) | [Examples](examples.md)

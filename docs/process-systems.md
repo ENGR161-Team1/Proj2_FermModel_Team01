@@ -270,3 +270,7 @@ print(f"Output ethanol: {final['amount']['ethanol']:.2f} kg")
 print(f"Conversion efficiency: {(final['amount']['ethanol']/2000)*100:.1f}%")
 print(f"Ethanol purity: {final['composition']['ethanol']:.2%}")
 ```
+
+---
+
+**Navigation:** [Home](index.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Process Systems](process-systems.md) | [Connector Systems](connector-systems.md) | [Examples](examples.md)

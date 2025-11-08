@@ -4,19 +4,22 @@
 
 Welcome to the Ethanol Plant Model documentation. This project provides a comprehensive simulation of an ethanol production plant developed for ENGR-16100 coursework.
 
----
+## 📖 Documentation
 
-## 📖 Quick Navigation
+### Getting Started
+- [Installation and Setup](getting-started.md)
+- [Basic Usage Examples](getting-started.md#basic-usage)
+- [Your First Simulation](getting-started.md#your-first-simulation)
 
-| Section | Description |
-|---------|-------------|
-| [Getting Started](getting-started.md) | Installation, setup, and basic usage |
-| [API Reference](api-reference.md) | Complete API documentation |
-| [Process Systems](process-systems.md) | Fermentation, filtration, distillation, dehydration |
-| [Connector Systems](connector-systems.md) | Pipes, bends, and valves |
-| [Examples](examples.md) | Practical examples and tutorials |
+### Reference Documentation
+- [Complete API Reference](api-reference.md)
+- [Process Systems Guide](process-systems.md)
+- [Connector Systems Guide](connector-systems.md)
 
----
+### Tutorials and Examples
+- [Practical Examples](examples.md)
+- [Complete Pipeline Examples](examples.md#complete-pipeline)
+- [Batch Processing](examples.md#batch-processing)
 
 ## What is the Ethanol Plant Model?
 
@@ -55,11 +58,12 @@ result = fermenter.processMass(
 )
 
 print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
+print(f"Purity: {result['composition']['ethanol']:.2%}")
 ```
 
 ## Installation
 
-See [Getting Started](getting-started.md) for detailed installation instructions.
+See the [Getting Started Guide](getting-started.md) for detailed installation instructions.
 
 ### Quick Install
 
@@ -69,45 +73,15 @@ cd EthanolPlantModel
 pip install .
 ```
 
-## Documentation Sections
+## Documentation Structure
 
-### [Getting Started](getting-started.md)
-Learn how to install and start using the Ethanol Plant Model. Includes:
-- System requirements
-- Installation steps (pip and uv)
-- Your first simulation
-- Understanding input/output types
-- Complete pipeline example
-
-### [API Reference](api-reference.md)
-Complete API documentation for all classes and methods:
-- System base class
-- Process systems (Fermentation, Filtration, Distillation, Dehydration)
-- Connector systems (Pipe, Bend, Valve)
-- All methods with parameters and return types
-
-### [Process Systems](process-systems.md)
-Detailed documentation for each process:
-- Process descriptions and stoichiometry
-- Input/output specifications
-- Efficiency effects
-- Examples and typical values
-
-### [Connector Systems](connector-systems.md)
-Fluid transport component documentation:
-- Energy loss calculations
-- Typical parameter values
-- Integration with process systems
-- Complete transport examples
-
-### [Examples](examples.md)
-Practical tutorials and examples:
-- Basic single process
-- Complete pipeline
-- Batch processing
-- Flow-based processing
-- Transport with connectors
-- Logging and visualization
+| Section | Description |
+|---------|-------------|
+| [Getting Started](getting-started.md) | Installation, setup, and basic usage |
+| [API Reference](api-reference.md) | Complete API documentation with all methods |
+| [Process Systems](process-systems.md) | Detailed guide to fermentation, filtration, distillation, and dehydration |
+| [Connector Systems](connector-systems.md) | Fluid transport components: pipes, bends, and valves |
+| [Examples](examples.md) | Practical examples and complete tutorials |
 
 ## Support
 
@@ -118,10 +92,14 @@ For questions or issues, please contact the development team:
 - **Samuel M. Razor** - razor@purdue.edu
 - **Katherine E. Hampton** - hampto64@purdue.edu
 
+## Contributing
+
+Contributions are welcome! Please see the main [README](../README.md) for contribution guidelines.
+
 ## License
 
 MIT License - See [LICENSE](../LICENSE) file for details.
 
 ---
 
-**Navigation:** [Home](index.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Examples](examples.md)
+**Navigation:** [Home](README.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Examples](examples.md)

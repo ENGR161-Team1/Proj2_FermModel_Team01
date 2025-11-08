@@ -283,3 +283,7 @@ Valve(resistance_coefficient=1.5, diameter=0.15)
 **Methods:**
 - `valveEnergyFunction(input_flow, input_mass, input_energy)` - Calculate energy loss
 - `valveMassFunction(input_mass)` - Calculate mass flow (conserved)
+
+---
+
+**Navigation:** [Home](index.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Process Systems](process-systems.md) | [Connector Systems](connector-systems.md) | [Examples](examples.md)

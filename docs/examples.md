@@ -449,3 +449,7 @@ result = system.processFlow(
     output_type="full"
 )
 ```
+
+---
+
+**Navigation:** [Home](index.md) | [Getting Started](getting-started.md) | [API Reference](api-reference.md) | [Process Systems](process-systems.md) | [Connector Systems](connector-systems.md) | [Examples](examples.md)
