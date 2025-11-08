@@ -11,6 +11,7 @@ Practical examples demonstrating common use cases for the Ethanol Plant Model.
 5. [Flow-Based Processing](#flow-based-processing)
 6. [Transport with Connectors](#transport-with-connectors)
 7. [Logging and Visualization](#logging-and-visualization)
+8. [Connector Energy Calculations](#connector-energy-calculations)
 
 ---
 
@@ -396,6 +397,81 @@ print(f"Batches processed: {len(input_sugar)}")
 print(f"Sugar range: {min(input_sugar):.0f} - {max(input_sugar):.0f} kg")
 print(f"Ethanol range: {min(output_ethanol):.2f} - {max(output_ethanol):.2f} kg")
 print(f"Average conversion: {(sum(output_ethanol)/sum(input_sugar)):.3f} kg ethanol/kg sugar")
+```
+
+---
+
+## Connector Energy Calculations
+
+### Understanding Energy Losses in Pipes
+
+```python
+from systems.connectors import Pipe
+import math
+
+# Create a long pipe with high friction
+pipe = Pipe(length=50.0, friction_factor=0.03, diameter=0.08)
+
+# Input parameters
+input_flow = 0.005  # 5 L/s = 0.005 m³/s
+input_mass = 5.0    # 5 kg/s (water at 1000 kg/m³)
+interval = 1.0
+
+# Calculate velocity
+velocity = input_flow / pipe.cross_sectional_area
+print(f"Flow velocity: {velocity:.3f} m/s")
+
+# Calculate input energy
+input_energy = interval * input_mass * (velocity ** 2) / 2
+print(f"Input kinetic energy: {input_energy:.3f} J")
+
+# Calculate energy consumed by friction
+energy_consumed = pipe.energyConsumed(input_flow=input_flow, input_mass=input_mass)
+print(f"Energy consumed: {energy_consumed:.3f} J")
+
+# Calculate output energy using processEnergy
+output_energy = pipe.processEnergy(input_energy=input_energy, 
+                                   input_flow=input_flow, 
+                                   input_mass=input_mass)
+print(f"Output kinetic energy: {output_energy:.3f} J")
+
+# Calculate final output flow
+output_flow = pipe.processFlow(input_flow=input_flow, 
+                               input_mass=input_mass, 
+                               interval=interval)
+print(f"Output flow rate: {output_flow:.6f} m³/s")
+print(f"Flow reduction: {(1 - output_flow/input_flow)*100:.2f}%")
+```
+
+### Comparing Different Connector Types
+
+```python
+from systems.connectors import Pipe, Bend, Valve
+
+# Create different connectors with same diameter
+diameter = 0.1
+pipe = Pipe(length=5.0, friction_factor=0.02, diameter=diameter)
+bend = Bend(bend_radius=0.5, bend_factor=0.9, diameter=diameter)
+valve = Valve(resistance_coefficient=0.5, diameter=diameter)
+
+# Standard flow conditions
+flow_params = {
+    "input_flow": 0.01,
+    "input_mass": 10.0,
+    "interval": 1.0
+}
+
+# Compare energy losses
+print("Energy Losses Comparison:")
+print(f"Pipe: {pipe.energyConsumed(**flow_params):.3f} J")
+print(f"Bend: {bend.energyConsumed(**flow_params):.3f} J")
+print(f"Valve: {valve.energyConsumed(**flow_params):.3f} J")
+
+# Compare output flows
+print("\nOutput Flow Rates:")
+print(f"Pipe: {pipe.processFlow(**flow_params):.6f} m³/s")
+print(f"Bend: {bend.processFlow(**flow_params):.6f} m³/s")
+print(f"Valve: {valve.processFlow(**flow_params):.6f} m³/s")
 ```
 
 ---

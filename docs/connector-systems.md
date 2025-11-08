@@ -23,43 +23,51 @@ Connectors model the physical components that transport fluids between process s
 
 ## Base Connector Class
 
-All connectors inherit from the `Connector` base class.
+The `Connector` class provides the foundation for all fluid transport components.
 
-### Initialization
+### Methods
 
-```python
-connector = Connector(
-    energy_consumed=energy_function,  # Callable
-    diameter=0.1  # meters
-)
-```
+#### `__init__(**kwargs)`
+Initialize a connector with energy function and diameter.
 
-### Key Methods (v0.4.0 API)
+**Parameters:**
+- `energy_consumed`: Function to calculate energy consumed by connector
+- `diameter`: Inner diameter of the connector in meters (default: 0.1m)
 
 #### `processDensity(**kwargs)`
+Calculate fluid density based on mass and volumetric flow rates.
 
-Calculate fluid density from mass and volumetric flow rates.
+**Parameters:**
+- `input_flow`: Volumetric flow rate in m³/s
+- `input_mass`: Mass flow rate in kg/s
 
-```python
-density = connector.processDensity(
-    input_flow=0.1,  # m³/s
-    input_mass=100   # kg/s
-)
-# Returns: 1000.0 kg/m³
-```
+**Returns:** Density in kg/m³, or 0 if volumetric flow is zero
+
+#### `processEnergy(**kwargs)`
+Calculate output kinetic energy after energy losses.
+
+**Parameters:**
+- `input_energy`: Input kinetic energy in Joules
+
+**Returns:** Output kinetic energy in Joules after subtracting energy losses
+
+**Note:** This method calls the connector's `energyConsumed` function to determine losses.
 
 #### `processFlow(**kwargs)`
+Calculate output volumetric flow rate after energy losses.
 
-Calculate output flow rate after energy losses.
+**Parameters:**
+- `input_flow`: Input volumetric flow rate in m³/s
+- `input_mass`: Mass flow rate in kg/s
+- `interval`: Time interval in seconds (default: 1s)
 
-```python
-output_flow = connector.processFlow(
-    input_flow=0.1,   # m³/s
-    input_mass=100,   # kg/s
-    interval=1        # seconds
-)
-# Returns: reduced flow rate in m³/s
-```
+**Returns:** Output volumetric flow rate in m³/s
+
+**Process:**
+1. Calculates flow velocity from input flow and cross-sectional area
+2. Computes input kinetic energy over the time interval
+3. Uses `processEnergy` to determine output energy after losses
+4. Calculates output flow rate using inverse kinetic energy formula with cube root
 
 ### Energy Balance
 
@@ -598,7 +606,7 @@ def calculate_pressure_drop(components, flow_rate, density=1000):
     # ΔP = ΔE / Volume = ΔE * density / mass
     pressure_drop = total_energy_loss * density / (mass_flow if mass_flow > 0 else 1)
     
-    return pressure_drop, current_flow
+    return pressure drop, current_flow
 
 # Example usage
 pipeline = [

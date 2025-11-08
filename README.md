@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.4.1
+**Version:** 0.4.2
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -65,7 +65,7 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 - **Bend** - Elbows with direction change losses based on bend geometry
 - **Valve** - Flow control with adjustable resistance coefficients
 
-All connectors conserve mass while calculating realistic energy dissipation based on fluid dynamics principles.
+All connectors conserve mass while calculating realistic energy dissipation based on fluid dynamics principles. The connectors use a dedicated `processEnergy` method to calculate output kinetic energy after accounting for energy losses, which is then used to determine output flow rates.
 
 ## Installation
 
@@ -123,7 +123,14 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.4.1)
+## Recent Updates (v0.4.2)
+
+- Added `processEnergy` method to Connector class for improved energy calculations
+- Refactored `processFlow` to use the new `processEnergy` method for cleaner code organization
+- Enhanced energy loss calculations with better separation of concerns
+- Fixed cube root calculation using `math.root` for accurate flow rate determination
+
+### Previous Updates (v0.4.1)
 
 - Restructured codebase: renamed `System` to `Process` and split into separate files
 - `process.py` now contains the base `Process` class

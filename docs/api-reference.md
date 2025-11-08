@@ -414,6 +414,26 @@ density = connector.processDensity(
 
 ---
 
+### `processEnergy(**kwargs)`
+
+Calculate output kinetic energy after losses.
+
+**Parameters:**
+- `input_energy` (float): Input energy in Joules
+
+**Returns:**
+- `float`: Output energy in Joules
+
+**Example:**
+```python
+energy = connector.processEnergy(
+    input_energy=1000
+)
+# Returns: 900.0 Joules (assuming 10% loss)
+```
+
+---
+
 ### `processFlow(**kwargs)`
 
 Calculate output flow rate after energy losses.
