@@ -18,7 +18,7 @@ class Connector:
         self.diameter = kwargs.get("diameter", 0.1)
         self.cross_sectional_area = math.pi * (self.diameter / 2) ** 2
     
-    def processDensity(self, inputs=dict()):
+    def processDensity(self, **kwargs):
         """
         Calculate fluid density based on mass and volumetric flow rates.
         
@@ -30,8 +30,8 @@ class Connector:
         Returns:
             Density in kg/m³, or 0 if volumetric flow is zero
         """
-        input_flow = inputs.get("input_flow", 0)
-        input_mass = inputs.get("input_mass", 0)
+        input_flow = kwargs.get("input_flow", 0)
+        input_mass = kwargs.get("input_mass", 0)
         return input_mass / input_flow if input_flow != 0 else 0
 
     def processFlow(self, **kwargs):
@@ -41,10 +41,10 @@ class Connector:
         Args:
             input_flow: Input volumetric flow rate in m³/s
             input_mass: Input mass flow rate in kg/s
-            interval: Time interval in seconds (default: 1)
+            interval: Time interval in seconds (default: 1s)
         
         Returns:
-            Output volumetric flow rate in m³/s
+            float: Output volumetric flow rate in m³/s
         """
         input_flow = kwargs.get("input_flow", 0)
         input_mass = kwargs.get("input_mass", 0)
@@ -54,7 +54,7 @@ class Connector:
         input_energy = interval * input_mass * (velocity ** 2) / 2
         output_energy = input_energy - self.energyConsumed(**kwargs)
 
-        output_flow = math.root((output_energy * self.cross_sectional_area) / (self.processDensity(**kwargs) * interval), 3) if self.processDensity(**kwargs) != 0 else 0
+        output_flow = ((output_energy * self.cross_sectional_area) / (self.processDensity(**kwargs) * interval)) ** (float(1) / 3) if self.processDensity(**kwargs) != 0 else 0
         return output_flow
 
 
