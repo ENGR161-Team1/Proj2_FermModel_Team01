@@ -1,4 +1,4 @@
-from process import Process
+from .process import Process
 
 
 class Fermentation(Process):

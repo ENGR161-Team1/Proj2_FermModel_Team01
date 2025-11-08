@@ -11,10 +11,10 @@ class Process:
     
     def __init__(self, **kwargs):
         """
-        Initialize a System with name, efficiency, and optional mass function.
+        Initialize a Process with name, efficiency, and optional mass function.
         Sets up input/output logs for tracking mass and flow data.
         """
-        self.name = kwargs.get("name", "System")
+        self.name = kwargs.get("name", "Process")
         
         # New log structure without 'total' in composition and separated amount/composition
         self.input_log = {
