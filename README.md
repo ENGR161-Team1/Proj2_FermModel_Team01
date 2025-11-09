@@ -1,9 +1,10 @@
 # Ethanol Plant Model
 
-**Version:** 0.5.0
+**Version:** 0.5.1
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Changelog](https://img.shields.io/badge/changelog-latest-orange.svg)](CHANGELOG.md)
 
 ## Overview
 This project contains a model of an ethanol production plant, developed as part of ENGR-16100 coursework. The model simulates the complete production pipeline from raw materials to high-purity ethanol through mass balance calculations, process efficiency modeling, and fluid transport dynamics.
@@ -130,63 +131,22 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.5.0)
+## Recent Updates (v0.5.1)
 
-### Major API Improvements
-- **Renamed methods for clarity:**
-  - `processMass()` → `processMassFlow()` - Process mass flow rate inputs
-  - `processFlow()` → `processVolumetricFlow()` - Process volumetric flow rate inputs
-  - `iterateMassInputs()` → `iterateMassFlowInputs()` - Batch process mass flow rates
-  - `iterateFlowInputs()` → `iterateVolumetricFlowInputs()` - Batch process volumetric flow rates
-  - `flowToMass()` → `volumetricToMass()` - Convert volumetric to mass flow rates
-  - `massToFlow()` → `massToVolumetric()` - Convert mass to volumetric flow rates
+### Bug Fixes
+- **Fixed parameter name in Process class initialization:**
+  - Corrected `massFunction` → `massFlowFunction` in kwargs.get() call
+  - Ensures proper initialization of mass flow processing functions
 
-- **Updated internal attribute names:**
-  - `massFunction` → `massFlowFunction` - Process-specific mass flow rate function
-  - Log structure keys updated: `mass` → `mass_flow`, `flow` → `volumetric_flow`
-  - `total_mass` → `total_mass_flow`, `total_flow` → `total_volumetric_flow`
+- **Fixed Connector energy calculation:**
+  - Removed redundant `self` reference in `processEnergy()` call
+  - Corrected method invocation in `processFlow()` method
 
-### New Features
-- **Energy consumption tracking:**
-  - Added `energy_consumed_log` to track energy usage over time
-  - New `processEnergyConsumption()` method for calculating energy consumption
-  - Configurable `energy_consumption_rate` with unit conversion support
+- **Fixed output flow calculation in Connector class:**
+  - Replaced `math.root()` with exponentiation operator `** (1/3)`
+  - Improves compatibility and calculation accuracy for cube root operations
 
-### Breaking Changes
-⚠️ **This version introduces breaking changes to the API.** Code using v0.4.x will need updates:
-
-```python
-# Old (v0.4.x)
-result = processor.processMass(inputs=data)
-processor.iterateMassInputs(inputValues=batch_data)
-
-# New (v0.5.0)
-result = processor.processMassFlow(inputs=data)
-processor.iterateMassFlowInputs(inputValues=batch_data)
-```
-
-### Previous Updates (v0.4.2)
-
-- Added `processEnergy` method to Connector class for improved energy calculations
-- Refactored `processFlow` to use the new `processEnergy` method for cleaner code organization
-- Enhanced energy loss calculations with better separation of concerns
-- Fixed cube root calculation using `math.root` for accurate flow rate determination
-
-### Previous Updates (v0.4.1)
-
-- Restructured codebase: renamed `System` to `Process` and split into separate files
-- `process.py` now contains the base `Process` class
-- `processors.py` contains all process implementations (Fermentation, Filtration, Distillation, Dehydration)
-- Improved code organization and modularity
-- Updated import statements to use relative imports
-
-### Previous Updates (v0.4.0)
-
-- Refactored connector API to use kwargs for improved flexibility
-- Enhanced flow calculation using cube root for accurate energy balance
-- Improved logging structure with separated amount/composition tracking
-- Added comprehensive error handling and input validation
-- Updated density-based mass/flow conversions for accuracy
+See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 
 ## Contributing
 
