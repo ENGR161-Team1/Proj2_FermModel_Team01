@@ -5,6 +5,51 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-11-09
+
+### Changed
+- **Refactored core conversion and utility methods to static methods:**
+  - Changed `processDensity()` from instance method to `@staticmethod` for improved clarity
+  - Converted `volumetricToMass()` to static method - no longer requires instance state
+  - Converted `massToVolumetric()` to static method - no longer requires instance state
+  - Updated all internal calls to use `Process.methodName()` for static method invocation
+
+- **Optimized density constant management:**
+  - Moved density constants from instance variables (`self.densityWater`, etc.) to class constants (`DENSITY_WATER`, etc.)
+  - Density constants now defined at class level for better performance and clarity
+  - Constants: `DENSITY_WATER`, `DENSITY_ETHANOL`, `DENSITY_SUGAR`, `DENSITY_FIBER` (all in kg/m³)
+
+- **Enhanced API flexibility with output_type parameter:**
+  - Added `output_type` parameter to `volumetricToMass()` and `massToVolumetric()` methods
+  - Supports three output formats: 'amount', 'composition', or 'full'
+  - 'amount': Returns component amounts only
+  - 'composition': Returns normalized component fractions
+  - 'full': Returns both amounts and compositions in nested structure
+
+- **Simplified and improved docstrings:**
+  - Condensed verbose class and method docstrings for better readability
+  - Maintained essential information while removing redundancy
+  - Improved parameter descriptions with focus on practical usage
+  - Better organization of Args, Returns, and Raises sections
+
+- **Streamlined initialization and internal structure:**
+  - Removed redundant comments from `__init__` method
+  - Cleaned up log structure initialization
+  - Improved power consumption unit conversion logic
+  - Removed commented-out code (`# matplotlib.use("gtk4agg")`)
+
+### Improved
+- **Code clarity and performance:**
+  - Static methods eliminate unnecessary instance state lookups
+  - Class constants provide better encapsulation
+  - Reduced memory footprint for repeated method calls
+  - More consistent with Python best practices
+
+- **Better error handling:**
+  - Maintained validation for all input modes
+  - Clear error messages for invalid parameters
+  - Comprehensive Raises documentation
+
 ## [0.6.1] - 2025-11-09
 
 ### Improved

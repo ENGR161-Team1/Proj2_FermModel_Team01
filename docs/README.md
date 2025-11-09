@@ -1,6 +1,6 @@
 # Ethanol Plant Model Documentation
 
-**Version:** 0.6.1
+**Version:** 0.7.0
 
 Welcome to the comprehensive documentation for the Ethanol Plant Model project. This documentation provides detailed information about installation, usage, API reference, and examples.
 
@@ -12,28 +12,37 @@ Welcome to the comprehensive documentation for the Ethanol Plant Model project. 
 4. **[Connector Systems](connector-systems.md)** - Fluid transport components (Pipes, Bends, Valves)
 5. **[Examples](examples.md)** - Practical examples and tutorials
 
-## 🆕 What's New in v0.6.1
+## 🆕 What's New in v0.7.0
 
-### Documentation Enhancements
+### Major Refactoring for Improved Design
 
-Version 0.6.1 focuses on comprehensive documentation improvements:
+Version 0.7.0 focuses on architectural improvements and API enhancements:
 
-- **Enhanced Docstrings**: All Process and Connector class methods now have detailed docstrings with:
-  - Complete parameter descriptions including types and units
-  - Detailed return value documentation
-  - Exception documentation for error conditions
-  - Clear explanations of method functionality
+- **Static Methods for Core Conversions**: 
+  - `processDensity()`, `volumetricToMass()`, and `massToVolumetric()` are now static methods
+  - Eliminates unnecessary instance state dependencies
+  - Improves performance for repeated conversions
+  - Better adherence to Python best practices
 
-- **Improved Code Clarity**: Added extensive inline comments explaining:
-  - Mass to volumetric flow rate conversions
-  - Energy and power consumption tracking
-  - Cost calculation mechanisms
-  - Logging structures and data storage
+- **Class-Level Density Constants**:
+  - Density constants moved from instance variables to class constants
+  - More efficient memory usage and cleaner code organization
+  - Constants: `DENSITY_WATER`, `DENSITY_ETHANOL`, `DENSITY_SUGAR`, `DENSITY_FIBER`
 
-- **Better Physical Explanations**: Documented the physics behind:
-  - Darcy-Weisbach friction losses in pipes
-  - Bend losses due to flow direction changes
-  - Valve resistance calculations
+- **Enhanced Output Flexibility**:
+  - New `output_type` parameter in conversion methods
+  - Three output formats: 'amount' (values), 'composition' (fractions), or 'full' (both)
+  - Provides cleaner API for different use cases
+
+- **Streamlined Documentation**:
+  - Simplified docstrings without sacrificing clarity
+  - Better focused parameter descriptions
+  - Improved code organization and readability
+
+- **Performance Improvements**:
+  - Static methods reduce method lookup overhead
+  - Class constants improve memory efficiency
+  - Cleaner code flow with fewer state dependencies
 
 ## 🚀 Quick Navigation
 
@@ -47,7 +56,7 @@ Check out the [API Reference](api-reference.md) for detailed documentation of al
 Review [Process Systems](process-systems.md) and [Connector Systems](connector-systems.md) for detailed information about the physical models and engineering principles.
 
 ### For Learning
-Explore [Examples](examples.md) for practical tutorials and use cases, now with improved inline documentation for easier understanding.
+Explore [Examples](examples.md) for practical tutorials and use cases with clear, concise inline documentation.
 
 ## 📊 Project Features
 
@@ -61,7 +70,8 @@ Explore [Examples](examples.md) for practical tutorials and use cases, now with 
 - ✅ Comprehensive logging system
 - ✅ Built-in visualization capabilities
 - ✅ Batch processing with iterative methods
-- ✅ **NEW**: Comprehensive documentation with detailed docstrings and inline comments
+- ✅ **NEW v0.7.0**: Static methods and class constants for better design
+- ✅ **NEW v0.7.0**: Flexible output type options for conversions
 
 ## 💡 Documentation Conventions
 
@@ -90,4 +100,4 @@ All documentation follows [NumPy docstring conventions](https://numpydoc.readthe
 
 ---
 
-*Last updated: Version 0.6.1 - November 2025*
+*Last updated: Version 0.7.0 - November 2025*

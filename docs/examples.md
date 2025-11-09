@@ -1,67 +1,63 @@
 # Examples
 
-**Version:** 0.6.1
+**Version:** 0.7.0
 
-This document provides practical examples and tutorials for using the Ethanol Plant Model.
+Practical examples and tutorials for using the Ethanol Plant Model.
 
-## 🆕 Enhanced Examples (v0.6.1)
+## 🆕 v0.7.0 Updates
 
-All examples now benefit from:
-- **Comprehensive inline documentation** explaining each step
-- **Detailed docstrings** accessible via `help()` function
-- **Physical principles** documented alongside code
-- **Clear parameter types and units** in all method calls
-
-Use `help()` on any object or method to see detailed documentation!
+All examples now demonstrate:
+- **Static methods** for cleaner conversion code
+- **Flexible output types** to choose your output format
+- **Class constants** for density values
+- **Simplified API** with better performance
 
 ## Example 1: Basic Fermentation
 
-### Understanding the Process (Enhanced Documentation)
+### Understanding the Process
 
-In this example, we'll process a sugar-water mixture through fermentation. The enhanced documentation helps you understand each parameter:
+Process a sugar-water mixture through fermentation:
 
 ```python
 from systems.processors import Fermentation
 
-# Initialize fermenter - use help() to see all parameters
-# help(Fermentation.__init__)
+# Initialize fermenter
 fermenter = Fermentation(
-    efficiency=0.95,  # float: 95% of theoretical yield (0-1)
-    power_consumption_rate=100,  # float: Power rate
-    power_consumption_unit="kW"  # str: Power unit ("kW", "W", "kWh/day")
+    efficiency=0.95,
+    power_consumption_rate=100,
+    power_consumption_unit="kW"
 )
 
-# Define inputs with documented units
+# Define inputs (kg/s)
 inputs = {
-    "ethanol": 0,    # kg/s: No initial ethanol
-    "water": 100,    # kg/s: Water content
-    "sugar": 50,     # kg/s: Sugar to ferment
-    "fiber": 10      # kg/s: Inert fiber
+    "ethanol": 0,
+    "water": 100,
+    "sugar": 50,
+    "fiber": 10
 }
 
-# Process with documented parameters
-# help(fermenter.processMassFlow) for full documentation
+# Process with full output (v0.7.0: flexible output_type)
 result = fermenter.processMassFlow(
     inputs=inputs,
-    input_type="amount",     # str: Input format type
-    output_type="full",      # str: Return amounts + compositions
-    store_outputs=True       # bool: Log results
+    input_type="amount",
+    output_type="full",  # Get both amounts and compositions
+    store_outputs=True
 )
 
-# Access results - structure documented in docstrings
+# Access results
 print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg/s")
 print(f"Sugar remaining: {result['amount']['sugar']:.2f} kg/s")
 print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 ```
 
-**Output with Explanations:**
+**Output:**
 ```
 Ethanol produced: 24.44 kg/s  # Calculated from stoichiometry (documented)
 Sugar remaining: 0.03 kg/s    # Small amount due to 95% efficiency
 Ethanol purity: 15.24%        # Mass fraction (documented calculation)
 ```
 
-**Understanding the Chemistry (Documented in Code):**
+**Understanding the Chemistry:**
 ```python
 # Chemical equation (documented in Fermentation docstring):
 # C₆H₁₂O₆ → 2 C₂H₅OH + 2 CO₂

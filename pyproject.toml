@@ -1,13 +1,13 @@
 [project]
 name = "EthanolPlantModel"
-version = "0.6.1"
+version = "0.7.0"
 authors = [
     { name = "Advay  Ramesh Chandra", email = "chand289@purdue.edu" },
     { name = "Karley Jo Hammond", email = "hammon88@purdue.edu" },
     { name = "Samuel Miles Razor", email = "razor@purdue.edu" },
     { name = "Kathering Elizabeth Hampton", email = "hampto64@purdue.edu" }
 ]
-description = "A complete simulation model for ethanol production plants featuring mass balance calculations, process efficiency modeling, fluid transport dynamics, and power consumption tracking across fermentation, filtration, distillation, and dehydration systems."
+description = "A complete simulation model for ethanol production plants featuring mass balance calculations, process efficiency modeling, fluid transport dynamics, power consumption tracking, and economic analysis across fermentation, filtration, distillation, and dehydration systems."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
@@ -18,7 +18,9 @@ keywords = [
     "mass-balance",
     "process-modeling",
     "fermentation",
-    "distillation"
+    "distillation",
+    "cost-tracking",
+    "power-consumption"
 ]
 dependencies = [
     "numpy",

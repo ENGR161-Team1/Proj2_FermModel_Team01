@@ -1,18 +1,18 @@
 # Getting Started
 
-**Version:** 0.6.1
+**Version:** 0.7.0
 
 This guide will help you install and start using the Ethanol Plant Model.
 
-## 🆕 What's New in v0.6.1
+## 🆕 What's New in v0.7.0
 
-Version 0.6.1 includes comprehensive documentation enhancements:
-- **Detailed docstrings** for all methods with parameter types, units, and defaults
-- **Enhanced inline comments** explaining complex calculations
-- **Physical principles** documented alongside mathematical operations
-- **Better error documentation** with exception types and conditions
+Version 0.7.0 includes major architectural improvements:
+- **Static methods** for core conversions - cleaner API and better performance
+- **Class-level density constants** - improved code organization and efficiency
+- **Flexible output types** - choose between amounts, compositions, or both
+- **Streamlined docstrings** - easier to read while maintaining clarity
 
-This makes learning and using the API much easier!
+See [API Reference](api-reference.md) for v0.7.0 migration guide!
 
 ## Installation
 
@@ -53,6 +53,8 @@ uv pip install .
 - ✅ **Batch Processing** - Process multiple input sets efficiently
 - ✅ **Process Efficiency Modeling** - Configure efficiency parameters for each unit
 - ✅ **Fluid Transport Dynamics** - Model energy losses in pipes, bends, and valves
+- ✅ **v0.7.0: Static Methods** - Cleaner API for conversion functions
+- ✅ **v0.7.0: Flexible Output Types** - Choose output format that fits your needs
 
 ## Basic Usage
 
@@ -106,7 +108,7 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 ```python
 # Process volumetric flow rate inputs
 result = fermenter.processVolumetricFlow(
-    inputs={"water": 0.1, "sugar": 0.03, "fiber": 0.008},  # m³/s
+    inputs={"water": 0.1, "sugar": 0.03, "fiber": 0.01},  # m³/s
     input_type="amount",
     output_type="full",
     store_outputs=True
@@ -123,17 +125,17 @@ from systems.processors import Distillation
 
 distiller = Distillation(
     efficiency=0.90,
-    energy_consumption_rate=100,  # kWh/day
-    energy_consumption_unit="kWh/day"
+    power_consumption_rate=100,
+    power_consumption_unit="kW"
 )
 
 # Calculate energy consumed over 1 hour (3600 seconds)
-energy = distiller.processEnergyConsumption(
+energy = distiller.processPowerConsumption(
     interval=3600,
     store_energy=True
 )
 
-print(f"Energy consumed: {energy/1000:.2f} kJ")
+print(f"Energy consumed: {energy/3.6e6:.2f} kWh")
 ```
 
 ### Batch Processing
@@ -166,104 +168,165 @@ print(f"Ethanol production: {ethanol_outputs}")
 - **`composition`**: Fractional compositions (0-1) + total flow rate
 - **`full`**: Both amounts and compositions provided
 
-### Output Types
+### Output Types (v0.7.0+)
 
-- **`amount`**: Returns only component amounts
-- **`composition`**: Returns only component compositions
-- **`full`**: Returns both amounts and compositions
+- **`amount`**: Returns only component amounts - lightweight output
+- **`composition`**: Returns only component fractions - minimal data
+- **`full`**: Returns both amounts and compositions - complete data
 
-## Understanding the Documentation
-
-### Docstring Conventions (v0.6.1)
-
-All methods now follow comprehensive docstring standards:
-
+**Example:**
 ```python
-def processMassFlow(self, **kwargs):
-    """
-    Process mass flow rate inputs through the system.
-    
-    Args:
-        inputs (dict): Dictionary of input values in kg/s
-        input_type (str, optional): Format - 'amount', 'composition', or 'full'. Default: 'full'
-        total_mass (float, optional): Total mass flow rate in kg/s. Required for 'composition' mode
-        store_outputs (bool, optional): Whether to log outputs. Default: False
-    
-    Returns:
-        dict: Processed outputs with same format as input_type
-    
-    Raises:
-        ValueError: If inputs are invalid or missing required parameters
-    """
+# Get only amounts (lightweight)
+amounts = fermenter.processMassFlow(inputs=data, output_type="amount")
+# Returns: {"ethanol": 24.44, "water": 89.5, ...}
+
+# Get only compositions (normalized fractions)
+comps = fermenter.processMassFlow(inputs=data, output_type="composition")
+# Returns: {"ethanol": 0.152, "water": 0.558, ...}
+
+# Get both (complete)
+full = fermenter.processMassFlow(inputs=data, output_type="full")
+# Returns: {"amount": {...}, "composition": {...}}
 ```
 
-Key features:
-- **Type information**: Every parameter includes its Python type
-- **Units**: Physical quantities include units (kg/s, m³/s, W, J, $)
-- **Defaults**: Optional parameters show their default values
-- **Return types**: Clear description of what's returned
-- **Exceptions**: Documents error conditions
+## Static Methods (v0.7.0+)
 
-### Inline Comments (v0.6.1)
+**NEW**: Core conversion methods are now static - call them directly on the class!
 
-Complex calculations now include step-by-step explanations:
+### Using Static Conversion Methods
 
 ```python
-# Convert volumetric flow to mass flow using component densities
-# Relationship: mass_flow = volumetric_flow × density
-mass_flow = volumetric_flow * self.densityWater  # kg/s = m³/s × kg/m³
+from systems.process import Process
 
-# Calculate kinetic power from flow velocity
-# Formula: P = (1/2) × m × v²
-input_power = input_mass_flow * (velocity ** 2) / 2  # Watts
+# Convert volumetric to mass using static method
+mass_flows = Process.volumetricToMass(
+    inputs={"ethanol": 0.05, "water": 0.25},
+    mode="amount"
+)
+
+# Convert mass to volumetric using static method
+volumetric_flows = Process.massToVolumetric(
+    inputs=mass_flows,
+    mode="amount"
+)
+
+# Calculate density using static method
+density = Process.processDensity(mass_flow=100, volumetric_flow=0.1)
+```
+
+### Class-Level Density Constants (v0.7.0+)
+
+Access component densities directly from the class:
+
+```python
+print(f"Water density: {Process.DENSITY_WATER} kg/m³")
+print(f"Ethanol density: {Process.DENSITY_ETHANOL} kg/m³")
+print(f"Sugar density: {Process.DENSITY_SUGAR} kg/m³")
+print(f"Fiber density: {Process.DENSITY_FIBER} kg/m³")
+
+# Used automatically in all conversions
+```
+
+## Migration from v0.6.x to v0.7.0
+
+### Static Method Changes
+
+```python
+# ❌ v0.6.x style (instance method)
+mass = process.volumetricToMass(inputs=data, mode="amount")
+
+# ✅ v0.7.0 style (static method)
+mass = Process.volumetricToMass(inputs=data, mode="amount")
+
+# Both work, but v0.7.0 is cleaner and faster
+```
+
+### Output Type Parameter
+
+```python
+# v0.7.0: Choose what you want back
+amounts_only = process.processMassFlow(
+    inputs=data,
+    output_type="amount"  # Just amounts
+)
+
+comps_only = process.processMassFlow(
+    inputs=data,
+    output_type="composition"  # Just compositions
+)
+
+full_data = process.processMassFlow(
+    inputs=data,
+    output_type="full"  # Both (default)
+)
 ```
 
 ## Next Steps
 
 Now that you have the basics:
 
-1. **Explore the API**: Check out [API Reference](api-reference.md) for detailed method documentation with enhanced docstrings
+1. **Explore the API**: Check out [API Reference](api-reference.md) for complete method documentation
 2. **Learn about processes**: Read [Process Systems](process-systems.md) for detailed process information
 3. **Understand connectors**: See [Connector Systems](connector-systems.md) for fluid transport physics
-4. **Try examples**: Work through [Examples](examples.md) with improved inline documentation
-5. **Review source code**: All code now includes comprehensive comments explaining the logic
+4. **Try examples**: Work through [Examples](examples.md) with practical tutorials
+5. **Review source code**: All code includes comprehensive inline comments
 
 ## Getting Help
 
-### Using Docstrings
+### Using Built-in Help
 
 In Python, you can access documentation directly:
 
 ```python
-# View method documentation
-help(fermenter.processMassFlow)
-
 # View class documentation
 help(Fermentation)
 
+# View method documentation
+help(fermenter.processMassFlow)
+
 # In IPython/Jupyter
+Fermentation?
 fermenter.processMassFlow?
 ```
 
 ### Understanding Errors
 
-Version 0.6.1 includes improved error messages. When you encounter a `ValueError`:
+v0.7.0 maintains clear error messages. When you encounter a `ValueError`:
 
 ```python
 try:
     result = process.processMassFlow(inputs={}, input_type='composition')
 except ValueError as e:
     print(f"Error: {e}")
-    # Output: "total_mass must be provided when input_type is 'composition'"
+    # Output: Error clearly states what's missing and why
 ```
 
-The error messages now clearly explain:
-- What parameter is missing
-- What condition caused the error
-- What you need to provide to fix it
+### Common Issues
+
+**Issue**: `AttributeError: 'Process' object has no attribute 'volumetricToMass'`
+```python
+# ❌ Wrong: Using as instance method
+mass = process.volumetricToMass(inputs=data)
+
+# ✅ Correct: Use static method on class
+mass = Process.volumetricToMass(inputs=data)
+```
+
+**Issue**: `KeyError` when accessing results
+```python
+# Check what output_type you requested
+result = process.processMassFlow(inputs=data, output_type="amount")
+# Returns: dict of amounts only, no 'composition' key
+
+# Use output_type="full" to get both
+result = process.processMassFlow(inputs=data, output_type="full")
+# Returns: {"amount": {...}, "composition": {...}}
+```
 
 ---
 
-*For detailed API documentation with comprehensive docstrings, see [API Reference](api-reference.md)*
+*For detailed API documentation, see [API Reference](api-reference.md)*
 
-*Last updated: Version 0.6.1 - November 2025*
+*For practical examples, see [Examples](examples.md)*
+
+*Last updated: Version 0.7.0 - November 2025*
