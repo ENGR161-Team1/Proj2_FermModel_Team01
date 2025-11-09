@@ -75,7 +75,7 @@ class Connector:
         output_energy = self.processEnergy(input_energy=input_energy)
 
         # Calculate output flow rate from output energy using inverse kinetic energy formula
-        output_flow = math.root(2 * output_energy * self.cross_sectional_area**2 / (self.processDensity(**kwargs) * interval), 3) if self.processDensity(**kwargs) * interval != 0 else 0
+        output_flow = (2 * output_energy * self.cross_sectional_area**2 / (self.processDensity(**kwargs) * interval)) ** (1 / 3) if self.processDensity(**kwargs) * interval != 0 else 0
         return output_flow
 
 
