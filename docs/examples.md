@@ -304,3 +304,187 @@ for i in range(5):
     print(f"  After filtration - Ethanol: {filt_log['mass_flow']['amount']['ethanol'][i]:.2f} kg/s")
     print(f"  Final purity: {filt_log['mass_flow']['composition']['ethanol'][i]:.2%}")
 ```
+
+## Power Consumption Tracking
+
+### Example 1: Basic Power Tracking
+
+```python
+from systems.processors import Fermentation
+
+# Create fermenter with power consumption
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,  # 50 kWh/day
+    power_consumption_unit="kWh/day"
+)
+
+# Process inputs
+result = fermenter.processMassFlow(
+    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
+    output_type="full",
+    store_outputs=True
+)
+
+# Calculate energy for 1 hour of operation
+energy = fermenter.processPowerConsumption(store_energy=True, interval=3600)
+
+print(f"Energy consumed: {energy/3_600_000:.2f} kWh")
+print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
+```
+
+### Example 2: Multi-Process Energy Analysis
+
+```python
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
+
+# Create complete process chain with power specifications
+processes = {
+    "Fermentation": Fermentation(efficiency=0.95, power_consumption_rate=50, power_consumption_unit="kWh/day"),
+    "Filtration": Filtration(efficiency=0.98, power_consumption_rate=10, power_consumption_unit="kWh/day"),
+    "Distillation": Distillation(efficiency=0.99, power_consumption_rate=100, power_consumption_unit="kWh/day"),
+    "Dehydration": Dehydration(efficiency=0.95, power_consumption_rate=20, power_consumption_unit="kWh/day")
+}
+
+# Initial inputs
+inputs = {"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10}
+interval = 3600  # 1 hour
+
+# Process through each stage
+energy_breakdown = {}
+current_output = inputs
+
+for name, process in processes.items():
+    # Process the inputs
+    current_output = process.processMassFlow(
+        inputs=current_output,
+        output_type="amount",
+        store_outputs=True
+    )
+    
+    # Calculate and store energy
+    energy = process.processPowerConsumption(store_energy=True, interval=interval)
+    energy_breakdown[name] = energy / 3_600_000  # Convert to kWh
+
+# Print results
+print("Energy Consumption Breakdown:")
+print("-" * 40)
+for name, energy in energy_breakdown.items():
+    print(f"{name:15} {energy:>8.2f} kWh")
+print("-" * 40)
+print(f"{'Total':15} {sum(energy_breakdown.values()):>8.2f} kWh")
+
+# Final product
+print(f"\nFinal ethanol: {current_output['ethanol']:.2f} kg")
+print(f"Final purity: {current_output['ethanol']/sum(current_output.values()):.2%}")
+```
+
+### Example 3: Energy Tracking Over Time
+
+```python
+from systems.processors import Fermentation
+import numpy as np
+
+# Create fermenter
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,
+    power_consumption_unit="kWh/day"
+)
+
+# Simulate 24 hours of operation
+hours = 24
+interval = 3600  # 1 hour in seconds
+
+for hour in range(hours):
+    # Process inputs (assuming continuous operation)
+    result = fermenter.processMassFlow(
+        inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
+        output_type="amount",
+        store_outputs=True
+    )
+    
+    # Track energy for this hour
+    energy = fermenter.processPowerConsumption(store_energy=True, interval=interval)
+
+# Analyze power log
+power_log = fermenter.power_log
+total_energy_j = sum(power_log["energy_consumed"])
+total_energy_kwh = total_energy_j / 3_600_000
+avg_power_w = np.mean(power_log["power_consumption_rate"])
+
+print(f"Total energy (24h): {total_energy_kwh:.2f} kWh")
+print(f"Average power: {avg_power_w/1000:.2f} kW")
+print(f"Total ethanol produced: {sum(fermenter.output_log['mass_flow']['amount']['ethanol']):.2f} kg")
+```
+
+### Example 4: Different Power Units
+
+```python
+from systems.processors import Fermentation, Filtration, Distillation
+
+# Different unit specifications
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,
+    power_consumption_unit="kWh/day"
+)
+
+filter = Filtration(
+    efficiency=0.98,
+    power_consumption_rate=0.417,  # Equivalent to 10 kWh/day
+    power_consumption_unit="kW"
+)
+
+distiller = Distillation(
+    efficiency=0.99,
+    power_consumption_rate=4167,  # Equivalent to 100 kWh/day
+    power_consumption_unit="W"
+)
+
+# All are internally converted to Watts
+print(f"Fermenter power: {fermenter.power_consumption_rate:.2f} W")
+print(f"Filter power: {filter.power_consumption_rate:.2f} W")
+print(f"Distiller power: {distiller.power_consumption_rate:.2f} W")
+```
+
+## Batch Processing
+
+```python
+from systems.processors import Fermentation
+import matplotlib.pyplot as plt
+
+fermenter = Fermentation(efficiency=0.95)
+
+# Batch inputs with varying sugar concentrations
+batch_inputs = {
+    "ethanol": [0, 0, 0, 0, 0],
+    "water": [100, 100, 100, 100, 100],
+    "sugar": [30, 40, 50, 60, 70],
+    "fiber": [10, 10, 10, 10, 10]
+}
+
+# Process batch
+output_log = fermenter.iterateMassFlowInputs(
+    inputValues=batch_inputs,
+    input_type="amount",
+    output_type="full"
+)
+
+# Extract results
+sugar_inputs = batch_inputs["sugar"]
+ethanol_outputs = output_log["mass_flow"]["amount"]["ethanol"]
+
+# Plot results
+plt.figure(figsize=(10, 6))
+plt.plot(sugar_inputs, ethanol_outputs, marker='o', linewidth=2)
+plt.xlabel("Sugar Input (kg/s)")
+plt.ylabel("Ethanol Output (kg/s)")
+plt.title("Fermentation: Sugar vs Ethanol Production")
+plt.grid(True)
+plt.show()
+
+print("=== Batch Processing Results ===")
+for i, (sugar, ethanol) in enumerate(zip(sugar_inputs, ethanol_outputs)):
+    print(f"Batch {i+1}: {sugar} kg/s sugar → {ethanol:.2f} kg/s ethanol")
+```

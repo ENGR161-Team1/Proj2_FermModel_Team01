@@ -82,11 +82,13 @@ class Process:
             },
         }
         
-        # Power and energy tracking logs
-        self.power_log = {
+        # Power, energy, and cost tracking logs
+        self.consumption_log = {
             "power_consumption_rate": [],  # Power consumption rate at each time step (W)
             "energy_consumed": [],  # Energy consumed in each interval (J)
-            "interval": []  # Time interval for each measurement (s)
+            "interval": [],  # Time interval for each measurement (s)
+            "cost_per_unit_flow": [],  # Cost per unit flow at each time step ($/m^3/s)
+            "cost_incurred": []  # Cost incurred for processing this flow ($)
         }
         
         # Power consumption setup with unit conversion
@@ -100,6 +102,8 @@ class Process:
         if power_consumption_unit == "kWh/hour" or power_consumption_unit == "kW":
             self.power_consumption_rate *= 1000  # Convert to W
         
+        self.cost_per_flow = kwargs.get("cost_per_flow", 0) # Cost per m^3/sec of flow processed
+
         # List of all chemical components tracked by this process
         self.components = ["ethanol", "water", "sugar", "fiber"]
         self.efficiency = kwargs.get("efficiency", 1.0)
@@ -235,6 +239,7 @@ class Process:
             total_mass_flow: Total input mass flow rate (required for composition inputs)
             store_inputs: Whether to log input values
             store_outputs: Whether to log output values
+            store_cost: Whether to log cost data
         
         Returns:
             Processed outputs in the format specified by output_type
@@ -248,6 +253,7 @@ class Process:
         # Determine whether to store inputs and outputs into the system logs
         store_inputs = kwargs.get("store_inputs", False)
         store_outputs = kwargs.get("store_outputs", False)
+        store_cost = kwargs.get("store_cost", False)
         
         # Validate inputs
         if not inputs:
@@ -292,6 +298,16 @@ class Process:
                 self.input_log["mass_flow"]["amount"][component].append(input_amounts[component])
                 self.input_log["mass_flow"]["composition"][component].append(input_composition[component])
             self.input_log["mass_flow"]["total_mass_flow"].append(total_mass_flow)
+
+        # Calculate and store cost if requested
+        if store_cost:
+            # Convert mass flow to volumetric flow for cost calculation
+            volumetric_flow_for_cost = self.massToVolumetric(inputs=input_amounts, mode="amount")
+            total_volumetric_flow = sum(volumetric_flow_for_cost.values())
+            cost_incurred = self.cost_per_flow * total_volumetric_flow
+            
+            self.consumption_log["cost_per_unit_flow"].append(self.cost_per_flow)
+            self.consumption_log["cost_incurred"].append(cost_incurred)
 
         # Process inputs through massFlowFunction
         output_amounts = self.massFlowFunction(input_amounts) if self.massFlowFunction else input_amounts
@@ -338,6 +354,7 @@ class Process:
             total_volumetric_flow: Total input volumetric flow rate (required for composition inputs)
             store_inputs: Whether to log input values
             store_outputs: Whether to log output values
+            store_cost: Whether to log cost data
         
         Returns:
             Processed volumetric flow rate outputs in the format specified by output_type
@@ -348,6 +365,7 @@ class Process:
         total_volumetric_flow = kwargs.get("total_flow", None)
         store_inputs = kwargs.get("store_inputs", False)
         store_outputs = kwargs.get("store_outputs", False)
+        store_cost = kwargs.get("store_cost", False)
 
         # Convert volumetric flow rate inputs to mass flow rate inputs
         if input_type == "full":
@@ -380,7 +398,8 @@ class Process:
             output_type="full",
             total_mass=total_mass_flow,
             store_inputs=store_inputs,
-            store_outputs=store_outputs
+            store_outputs=store_outputs,
+            store_cost=False
         )
 
         # Convert mass flow rate outputs back to volumetric flow rate outputs
@@ -418,6 +437,13 @@ class Process:
                         self.input_log["volumetric_flow"]["composition"][component].append(inputs[component])
                         self.input_log["volumetric_flow"]["amount"][component].append(inputs[component] * total_volumetric_flow)
                 self.input_log["volumetric_flow"]["total_volumetric_flow"].append(total_volumetric_flow)
+
+        # Calculate and store cost if requested
+        if store_cost:
+            cost_incurred = self.cost_per_flow * total_volumetric_flow
+            
+            self.consumption_log["cost_per_unit_flow"].append(self.cost_per_flow)
+            self.consumption_log["cost_incurred"].append(cost_incurred)
 
         # Calculate total output volumetric flow rate (sum component volumetric flow rates)
         output_total_volumetric_flow = sum(volumetric_flow_output_amounts[component] for component in volumetric_flow_output_amounts)
@@ -464,13 +490,13 @@ class Process:
         
         if store_energy:
             # Log power consumption rate (W)
-            self.power_log["power_consumption_rate"].append(self.power_consumption_rate)
+            self.consumption_log["power_consumption_rate"].append(self.power_consumption_rate)
             
             # Log energy consumed in this interval (J)
-            self.power_log["energy_consumed"].append(energy_consumed_in_interval)
+            self.consumption_log["energy_consumed"].append(energy_consumed_in_interval)
             
             # Log the time interval (s)
-            self.power_log["interval"].append(interval)
+            self.consumption_log["interval"].append(interval)
         
         return energy_consumed_in_interval
 

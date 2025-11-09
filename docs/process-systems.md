@@ -483,3 +483,126 @@ print(f"Final purity: {final['composition']['ethanol']:.3%}")
 - **[Connector Systems](connector-systems.md)**: Learn about fluid transport
 - **[Examples](examples.md)**: See more complex applications
 - **[API Reference](api-reference.md)**: Detailed method documentation
+
+---
+
+## Power Consumption Tracking
+
+All process systems support power consumption tracking with flexible unit configuration.
+
+### Configuration
+
+```python
+from systems.processors import Fermentation
+
+# Configure power consumption during initialization
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,
+    power_consumption_unit="kWh/day"
+)
+```
+
+### Supported Units
+
+- `"kWh/day"` - Kilowatt-hours per day (default)
+- `"kWh/hour"` or `"kW"` - Kilowatts
+- `"W"` - Watts
+
+All units are internally converted to Watts for consistent calculations.
+
+### Calculating Energy Consumption
+
+```python
+# Calculate energy over a time interval
+interval = 3600  # 1 hour in seconds
+energy_joules = fermenter.processPowerConsumption(
+    store_energy=True,
+    interval=interval
+)
+
+# Convert to kWh
+energy_kwh = energy_joules / 3_600_000
+print(f"Energy consumed: {energy_kwh:.2f} kWh")
+```
+
+### Accessing Power Logs
+
+```python
+# After processing with store_energy=True
+power_log = fermenter.power_log
+
+# Power consumption rate at each timestep (Watts)
+power_rates = power_log["power_consumption_rate"]
+
+# Energy consumed in each interval (Joules)
+energy_consumed = power_log["energy_consumed"]
+
+# Time intervals (seconds)
+intervals = power_log["interval"]
+
+# Calculate total energy consumed
+total_energy = sum(energy_consumed)
+print(f"Total energy: {total_energy/3_600_000:.2f} kWh")
+```
+
+### Example: Complete Process with Power Tracking
+
+```python
+from systems.processors import Fermentation, Filtration, Distillation
+
+# Create process chain with power consumption
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,  # kWh/day
+    power_consumption_unit="kWh/day"
+)
+
+filter = Filtration(
+    efficiency=0.98,
+    power_consumption_rate=10,  # kWh/day
+    power_consumption_unit="kWh/day"
+)
+
+distiller = Distillation(
+    efficiency=0.99,
+    power_consumption_rate=100,  # kWh/day
+    power_consumption_unit="kWh/day"
+)
+
+# Process inputs
+inputs = {"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10}
+
+# Fermentation
+result1 = fermenter.processMassFlow(inputs=inputs, output_type="amount", store_outputs=True)
+energy1 = fermenter.processPowerConsumption(store_energy=True, interval=3600)
+
+# Filtration
+result2 = filter.processMassFlow(inputs=result1, output_type="amount", store_outputs=True)
+energy2 = filter.processPowerConsumption(store_energy=True, interval=3600)
+
+# Distillation
+result3 = distiller.processMassFlow(inputs=result2, output_type="amount", store_outputs=True)
+energy3 = distiller.processPowerConsumption(store_energy=True, interval=3600)
+
+# Calculate total energy
+total_energy_j = energy1 + energy2 + energy3
+total_energy_kwh = total_energy_j / 3_600_000
+
+print(f"Total energy consumed: {total_energy_kwh:.2f} kWh")
+print(f"Fermentation: {energy1/3_600_000:.2f} kWh")
+print(f"Filtration: {energy2/3_600_000:.2f} kWh")
+print(f"Distillation: {energy3/3_600_000:.2f} kWh")
+```
+
+## Process Efficiency
+
+| Process | Parameter | Typical Range | Impact on Yield |
+|---------|-----------|---------------|-----------------|
+| Fermentation | `efficiency` | 0.70 - 0.95 | Higher is better |
+| Filtration | `efficiency` | 0.90 - 0.99 | Higher is better |
+| Distillation | `efficiency` | 0.80 - 0.99 | Higher is better |
+| Dehydration | `efficiency` | 0.90 - 0.99 | Higher is better |
+
+- Monitor and adjust parameters for optimal performance.
+- Consider trade-offs between yield, purity, and energy consumption.

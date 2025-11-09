@@ -1,366 +1,345 @@
 # API Reference
 
-Complete API documentation for the Ethanol Plant Model.
+This document provides detailed API documentation for all classes and methods in the Ethanol Plant Model.
 
 ## Process Class
 
-Base class for all processing systems.
+The base class for all process systems.
 
-### Constructor
+### Initialization Parameters
 
 ```python
-Process(name="Process", efficiency=1.0, massFlowFunction=None, 
-        energy_consumption_rate=0, energy_consumption_unit="kWh/day")
+Process(
+    name: str = "Process",
+    efficiency: float = 1.0,
+    massFlowFunction: callable = None,
+    power_consumption_rate: float = 0,
+    power_consumption_unit: str = "kWh/day"
+)
 ```
 
 **Parameters:**
-- `name` (str): Name of the process
-- `efficiency` (float): Process efficiency (0-1)
-- `massFlowFunction` (callable): Function to process mass flow rates
-- `energy_consumption_rate` (float): Energy consumption rate
-- `energy_consumption_unit` (str): Unit for energy consumption ("kWh/day")
+- `name` (str): Name identifier for the process
+- `efficiency` (float): Process efficiency between 0 and 1 (default: 1.0)
+- `massFlowFunction` (callable): Function to transform mass flow inputs to outputs
+- `power_consumption_rate` (float): Power consumption rate (default: 0)
+- `power_consumption_unit` (str): Unit for power consumption. Options:
+  - `"kWh/day"` (default): Kilowatt-hours per day
+  - `"kWh/hour"` or `"kW"`: Kilowatts
+  - `"W"`: Watts
 
-### Core Methods
+**Attributes:**
+- `power_log` (dict): Dictionary tracking power consumption with keys:
+  - `power_consumption_rate`: List of power rates (W)
+  - `energy_consumed`: List of energy consumed in each interval (J)
+  - `interval`: List of time intervals (s)
+- `input_log` (dict): Logged input data
+- `output_log` (dict): Logged output data
 
-#### `processMassFlow(**kwargs)`
+### Methods
+
+#### `processMassFlow()`
 
 Process mass flow rate inputs through the system.
 
+```python
+processMassFlow(
+    inputs: dict,
+    input_type: str = "amount",
+    output_type: str = "amount",
+    total_mass_flow: float = None,
+    store_inputs: bool = False,
+    store_outputs: bool = False
+) -> dict
+```
+
 **Parameters:**
-- `inputs` (dict): Input values (format depends on input_type)
-- `input_type` (str): "amount", "composition", or "full"
-- `output_type` (str): "amount", "composition", or "full"
+- `inputs` (dict): Input amounts, compositions, or both
+- `input_type` (str): Type of input data
+  - `"amount"`: Absolute amounts (kg/s or kg/hr)
+  - `"composition"`: Fractional compositions (requires `total_mass_flow`)
+  - `"full"`: Both amounts and compositions
+- `output_type` (str): Type of output data
+  - `"amount"`: Returns only amounts
+  - `"composition"`: Returns only compositions
+  - `"full"`: Returns both amounts and compositions
 - `total_mass_flow` (float): Total mass flow rate (required for composition inputs)
 - `store_inputs` (bool): Whether to log inputs (default: False)
 - `store_outputs` (bool): Whether to log outputs (default: False)
 
-**Returns:** Dictionary with processed outputs in specified format
+**Returns:**
+- dict: Processed output in the requested format
 
-**Example:**
-```python
-result = processor.processMassFlow(
-    inputs={"ethanol": 10, "water": 50, "sugar": 20, "fiber": 5},
-    input_type="amount",
-    output_type="full",
-    store_outputs=True
-)
-```
-
-#### `processVolumetricFlow(**kwargs)`
+#### `processVolumetricFlow()`
 
 Process volumetric flow rate inputs through the system.
 
-**Parameters:**
-- `inputs` (dict): Input volumetric flow rates
-- `input_type` (str): "amount", "composition", or "full"
-- `output_type` (str): "amount", "composition", or "full"
-- `total_volumetric_flow` (float): Total volumetric flow rate (required for composition)
-- `store_inputs` (bool): Whether to log inputs (default: False)
-- `store_outputs` (bool): Whether to log outputs (default: False)
-
-**Returns:** Dictionary with processed volumetric flow rates
-
-**Example:**
 ```python
-result = processor.processVolumetricFlow(
-    inputs={"water": 0.05, "sugar": 0.01},
-    input_type="amount",
-    output_type="full"
-)
+processVolumetricFlow(
+    inputs: dict,
+    input_type: str = "amount",
+    output_type: str = "amount",
+    total_volumetric_flow: float = None,
+    store_inputs: bool = False,
+    store_outputs: bool = False
+) -> dict
 ```
 
-#### `processEnergyConsumption(**kwargs)`
+**Parameters:** Same as `processMassFlow()` but for volumetric flow rates (m³/s or m³/hr)
 
-Calculate energy consumed over a time interval.
+**Returns:**
+- dict: Processed output in the requested format
+
+#### `processPowerConsumption()`
+
+Calculate energy consumed over a time interval based on power consumption rate.
+
+```python
+processPowerConsumption(
+    store_energy: bool = False,
+    interval: float = 1
+) -> float
+```
 
 **Parameters:**
+- `store_energy` (bool): Whether to log power and energy data (default: False)
 - `interval` (float): Time interval in seconds (default: 1)
-- `store_energy` (bool): Whether to log energy consumed (default: False)
 
-**Returns:** Energy consumed in Joules
+**Returns:**
+- float: Energy consumed in the interval (Joules)
 
 **Example:**
 ```python
-energy = processor.processEnergyConsumption(
-    interval=3600,  # 1 hour
-    store_energy=True
-)
+# Calculate energy over 60 seconds and log it
+energy = processor.processPowerConsumption(store_energy=True, interval=60)
+print(f"Energy consumed: {energy} J")
+
+# Access logged data
+print(f"Power rate: {processor.power_log['power_consumption_rate'][-1]} W")
+print(f"Energy: {processor.power_log['energy_consumed'][-1]} J")
+print(f"Interval: {processor.power_log['interval'][-1]} s")
 ```
 
-### Conversion Methods
+#### `iterateMassFlowInputs()`
 
-#### `volumetricToMass(**kwargs)`
+Process multiple sets of mass flow rate inputs in batch.
+
+```python
+iterateMassFlowInputs(
+    inputValues: dict,
+    input_type: str = "amount",
+    output_type: str = "amount",
+    total_mass_flow_list: list = None
+) -> None
+```
+
+**Parameters:**
+- `inputValues` (dict): Dictionary of component lists
+- `input_type` (str): Input data type ("amount", "composition", or "full")
+- `output_type` (str): Output data type ("amount", "composition", or "full")
+- `total_mass_flow_list` (list): List of total mass flows (for composition inputs)
+
+**Note:** Results are automatically stored in logs
+
+#### `iterateVolumetricFlowInputs()`
+
+Process multiple sets of volumetric flow rate inputs in batch.
+
+```python
+iterateVolumetricFlowInputs(
+    inputValues: dict,
+    input_type: str = "amount",
+    output_type: str = "amount",
+    total_volumetric_flow_list: list = None
+) -> None
+```
+
+**Parameters:** Same as `iterateMassFlowInputs()` but for volumetric flow rates
+
+#### `volumetricToMass()`
 
 Convert volumetric flow rates to mass flow rates.
 
-**Parameters:**
-- `inputs` (dict): Component volumetric flow rates
-- `mode` (str): "amount" or "composition"
-- `total_volumetric_flow` (float): Required when mode="composition"
+```python
+volumetricToMass(
+    inputs: dict,
+    mode: str = "amount",
+    total_flow: float = None
+) -> dict
+```
 
-**Returns:** Dictionary of mass flow rates
-
-#### `massToVolumetric(**kwargs)`
+#### `massToVolumetric()`
 
 Convert mass flow rates to volumetric flow rates.
 
-**Parameters:**
-- `inputs` (dict): Component mass flow rates
-- `mode` (str): "amount" or "composition"
-- `total_mass_flow` (float): Required when mode="composition"
-
-**Returns:** Dictionary of volumetric flow rates
-
-### Batch Processing Methods
-
-#### `iterateMassFlowInputs(inputValues, **kwargs)`
-
-Process multiple sets of mass flow rate inputs iteratively.
-
-**Parameters:**
-- `inputValues` (dict): Input data arrays
-- `input_type` (str): "amount", "composition", or "full"
-- `output_type` (str): "amount", "composition", or "full"
-- `total_mass_flow_list` (list): List of total mass flow rates (for composition)
-
-**Returns:** Updated output log
-
-**Example:**
 ```python
-batch_data = {
-    "ethanol": [0, 0, 0],
-    "water": [100, 150, 200],
-    "sugar": [50, 75, 100],
-    "fiber": [10, 15, 20]
-}
-
-output_log = processor.iterateMassFlowInputs(
-    inputValues=batch_data,
-    input_type="amount",
-    output_type="full"
-)
+massToVolumetric(
+    inputs: dict,
+    mode: str = "amount",
+    total_mass: float = None
+) -> dict
 ```
 
-#### `iterateVolumetricFlowInputs(inputValues, **kwargs)`
+## Processor Classes
 
-Process multiple sets of volumetric flow rate inputs iteratively.
-
-**Parameters:**
-- `inputValues` (dict): Input data arrays
-- `input_type` (str): "amount", "composition", or "full"
-- `output_type` (str): "amount", "composition", or "full"
-- `total_volumetric_flow_list` (list): List of total volumetric flow rates
-
-**Returns:** Updated output log
-
-### Attributes
-
-#### Logs
-
-- `input_log` (dict): Stores input history
-  - `mass_flow`: Mass flow rate data
-    - `total_mass_flow`: Total mass flow rates
-    - `amount`: Component amounts
-    - `composition`: Component compositions
-  - `volumetric_flow`: Volumetric flow rate data
-    - `total_volumetric_flow`: Total volumetric flow rates
-    - `amount`: Component amounts
-    - `composition`: Component compositions
-
-- `output_log` (dict): Stores output history (same structure as input_log)
-
-- `energy_consumed_log` (list): Energy consumption history
-
-#### Constants
-
-- `densityWater`: 997 kg/m³
-- `densityEthanol`: 789 kg/m³
-- `densitySugar`: 1590 kg/m³
-- `densityFiber`: 1311 kg/m³
-
-## Process Implementations
+All processor classes inherit from `Process` and accept the same initialization parameters.
 
 ### Fermentation
 
-Converts sugar to ethanol with 51% theoretical yield.
+Converts sugar to ethanol (51% stoichiometric yield).
 
 ```python
-from systems.processors import Fermentation
-
-fermenter = Fermentation(efficiency=0.95)
-result = fermenter.processMassFlow(
-    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
-    input_type="amount",
-    output_type="full"
+Fermentation(
+    efficiency: float = 1.0,
+    power_consumption_rate: float = 0,
+    power_consumption_unit: str = "kWh/day",
+    name: str = "Fermentation"
 )
 ```
+
+**Process:** `sugar → ethanol (51%) + unconverted sugar`
 
 ### Filtration
 
 Removes fiber from the mixture.
 
 ```python
-from systems.processors import Filtration
-
-filter = Filtration(efficiency=0.98)
-result = filter.processMassFlow(
-    inputs={"ethanol": 25, "water": 50, "sugar": 5, "fiber": 10},
-    input_type="amount",
-    output_type="full"
+Filtration(
+    efficiency: float = 1.0,
+    power_consumption_rate: float = 0,
+    power_consumption_unit: str = "kWh/day",
+    name: str = "Filtration"
 )
 ```
+
+**Process:** `fiber → removed fiber + remaining fiber`
 
 ### Distillation
 
 Separates ethanol from impurities.
 
 ```python
-from systems.processors import Distillation
-
-distiller = Distillation(efficiency=0.90)
-result = distiller.processMassFlow(
-    inputs={"ethanol": 25, "water": 50, "sugar": 2, "fiber": 0.2},
-    input_type="amount",
-    output_type="full"
+Distillation(
+    efficiency: float = 1.0,
+    power_consumption_rate: float = 0,
+    power_consumption_unit: str = "kWh/day",
+    name: str = "Distillation"
 )
 ```
+
+**Process:** At perfect efficiency (1.0), outputs pure ethanol. Lower efficiency adds proportional impurities.
 
 ### Dehydration
 
-Removes water from ethanol mixture.
+Removes water from the mixture.
 
 ```python
-from systems.processors import Dehydration
-
-dehydrator = Dehydration(efficiency=0.95)
-result = dehydrator.processMassFlow(
-    inputs={"ethanol": 80, "water": 15, "sugar": 0.5, "fiber": 0.1},
-    input_type="amount",
-    output_type="full"
+Dehydration(
+    efficiency: float = 1.0,
+    power_consumption_rate: float = 0,
+    power_consumption_unit: str = "kWh/day",
+    name: str = "Dehydration"
 )
 ```
 
-## Migration from v0.4.x
+**Process:** `water → removed water + remaining water`
 
-### Method Name Changes
+## Connector Class
 
-| v0.4.x | v0.5.0 |
-|--------|--------|
-| `processMass()` | `processMassFlow()` |
-| `processFlow()` | `processVolumetricFlow()` |
-| `iterateMassInputs()` | `iterateMassFlowInputs()` |
-| `iterateFlowInputs()` | `iterateVolumetricFlowInputs()` |
-| `flowToMass()` | `volumetricToMass()` |
-| `massToFlow()` | `massToVolumetric()` |
+Base class for fluid transport components.
 
-### Log Structure Changes
+### Initialization Parameters
 
-- `input_log["mass"]` → `input_log["mass_flow"]`
-- `input_log["flow"]` → `input_log["volumetric_flow"]`
-- `total_mass` → `total_mass_flow`
-- `total_flow` → `total_volumetric_flow`
+```python
+Connector(
+    name: str = "Connector",
+    length: float = 1.0,
+    diameter: float = 0.1,
+    roughness: float = 0.0001,
+    bend_angle: float = 0,
+    bend_radius: float = None,
+    resistance_coefficient: float = 0
+)
+```
 
-### Parameter Changes
+### Connector Types
 
-- `total_mass` → `total_mass_flow`
-- `total_flow` → `total_volumetric_flow`
-- `total_mass_list` → `total_mass_flow_list`
-- `total_flow_list` → `total_volumetric_flow_list`
+#### Pipe
 
-## Connector Classes
+Straight pipe with friction losses.
 
-### Base Connector Class
+```python
+Pipe(length: float, diameter: float, roughness: float = 0.0001)
+```
 
-#### `__init__(**kwargs)`
+#### Bend
 
-Initialize a connector with power function and diameter.
+Pipe bend with direction change losses.
+
+```python
+Bend(
+    diameter: float,
+    bend_angle: float,
+    bend_radius: float = None,
+    roughness: float = 0.0001
+)
+```
+
+#### Valve
+
+Flow control valve with adjustable resistance.
+
+```python
+Valve(diameter: float, resistance_coefficient: float)
+```
+
+### Methods
+
+#### `processFlow()`
+
+Calculate output flow considering energy losses.
+
+```python
+processFlow(inputs: dict, store_inputs: bool = False, store_outputs: bool = False) -> dict
+```
 
 **Parameters:**
-- `power_consumed` (function): Function to calculate power consumed by connector in Watts
-- `diameter` (float): Inner diameter of the connector in meters (default: 0.1)
-
-#### `processPower(**kwargs)`
-
-Calculate output kinetic power after power losses.
-
-**Parameters:**
-- `input_power` (float): Input kinetic power in Watts
+- `inputs` (dict): Input flow rates and compositions
+- `store_inputs` (bool): Whether to log inputs
+- `store_outputs` (bool): Whether to log outputs
 
 **Returns:**
-- `float`: Output kinetic power in Watts after accounting for losses
+- dict: Output flow rates and compositions after energy losses
 
-#### `processFlow(**kwargs)`
+---
 
-Calculate output volumetric flow rate after power losses.
+## Complete Example
 
-**Parameters:**
-- `input_volumetric_flow` (float): Input volumetric flow rate in m³/s
-- `input_mass_flow` (float): Input mass flow rate in kg/s
+```python
+from systems.processors import Fermentation, Filtration
 
-**Returns:**
-- `float`: Output volumetric flow rate in m³/s
+# Create processes with power consumption
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,  # 50 kWh/day
+    power_consumption_unit="kWh/day"
+)
 
-### Pipe Class
+filter = Filtration(
+    efficiency=0.98,
+    power_consumption_rate=2,  # 2 kW
+    power_consumption_unit="kW"
+)
 
-Represents a straight pipe segment with friction losses calculated using the Darcy-Weisbach equation.
+# Process with logging
+result = fermenter.processMassFlow(
+    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
+    input_type="amount",
+    output_type="full",
+    store_outputs=True
+)
 
-#### `__init__(**kwargs)`
-
-**Parameters:**
-- `length` (float): Length of the pipe in meters (default: 1.0)
-- `friction_factor` (float): Darcy friction factor (default: 0.02)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
-
-#### `pipePowerFunction(**kwargs)`
-
-Calculate power consumed due to friction in the pipe.
-
-**Parameters:**
-- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
-- `input_mass_flow` (float): Mass flow rate in kg/s
-
-**Returns:**
-- `float`: Power consumed due to friction (Watts)
-
-### Bend Class
-
-Represents a pipe bend or elbow with power losses proportional to dynamic pressure and bend geometry.
-
-#### `__init__(**kwargs)`
-
-**Parameters:**
-- `bend_radius` (float): Radius of curvature in meters (default: 0.5)
-- `bend_factor` (float): Efficiency factor, 1.0 = no loss (default: 0.9)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
-
-#### `bendPowerFunction(**kwargs)`
-
-Calculate power consumed in the bend due to flow direction change.
-
-**Parameters:**
-- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
-- `input_mass_flow` (float): Mass flow rate in kg/s
-
-**Returns:**
-- `float`: Power consumed due to bend (Watts)
-
-### Valve Class
-
-Represents a valve with adjustable flow resistance and power loss proportional to dynamic pressure.
-
-#### `__init__(**kwargs)`
-
-**Parameters:**
-- `resistance_coefficient` (float): Flow resistance coefficient (default: 1.0)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
-
-#### `valvePowerFunction(**kwargs)`
-
-Calculate power consumed through the valve.
-
-**Parameters:**
-- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
-- `input_mass_flow` (float): Mass flow rate in kg/s
-
-**Returns:**
-- `float`: Power consumed due to valve resistance (Watts)
+# Track energy consumption
+energy = fermenter.processPowerConsumption(store_energy=True, interval=3600)  # 1 hour
+print(f"Energy consumed: {energy/3600000:.2f} kWh")
+```

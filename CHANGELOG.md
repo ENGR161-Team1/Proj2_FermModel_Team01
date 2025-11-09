@@ -5,6 +5,32 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2025-11-09
+
+### Added
+- **Power consumption tracking system:**
+  - Added `power_log` dictionary to track power consumption rate, energy consumed, and time intervals
+  - New `processPowerConsumption()` method for calculating energy consumption based on power rate
+  - Comprehensive power/energy logging with separate tracking for power (W), energy (J), and intervals (s)
+
+### Changed
+- **Refactored energy consumption to power-based model:**
+  - Renamed `energy_consumption_rate` → `power_consumption_rate` for accurate physical representation
+  - Renamed `energy_consumption_unit` → `power_consumption_unit` (supports "kWh/day", "kWh/hour", "kW", "W")
+  - Renamed `processEnergyConsumption()` → `processPowerConsumption()` to reflect instantaneous power calculation
+  - Replaced `energy_consumed_log` list with structured `power_log` dictionary containing:
+    - `power_consumption_rate`: Power consumption at each time step (W)
+    - `energy_consumed`: Energy consumed in each interval (J)
+    - `interval`: Time interval for each measurement (s)
+  - Enhanced all processor classes (Fermentation, Filtration, Distillation, Dehydration) to accept power consumption parameters in initialization
+
+### Improved
+- **Enhanced documentation:**
+  - Updated docstrings for all processor classes with detailed parameter descriptions
+  - Added comprehensive output descriptions for each process step
+  - Improved clarity of stoichiometry and efficiency explanations
+  - Better code comments explaining conversion calculations and logging behavior
+
 ## [0.5.2] - 2025-11-08
 
 ### Changed

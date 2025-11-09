@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.5.2
+**Version:** 0.5.3
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -43,7 +43,8 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 ## Features
 
 - ✅ Mass flow rate and volumetric flow rate balance calculations
-- ✅ Energy consumption tracking for all processes
+- ✅ Power consumption tracking with configurable rates and units
+- ✅ Energy consumption tracking for all processes with detailed logging
 - ✅ Energy loss modeling for fluid transport (Darcy-Weisbach, bend losses)
 - ✅ Configurable efficiency parameters for all process units
 - ✅ Flexible input/output formats (amount, composition, or full)
@@ -64,7 +65,7 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 All processes support:
 - Mass flow rate processing via `processMassFlow()`
 - Volumetric flow rate processing via `processVolumetricFlow()`
-- Energy consumption tracking via `processEnergyConsumption()`
+- Power consumption tracking via `processPowerConsumption()`
 - Batch processing via `iterateMassFlowInputs()` and `iterateVolumetricFlowInputs()`
 
 ### Fluid Transport Components
@@ -131,13 +132,15 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.5.2)
+## Recent Updates (v0.5.3)
 
-### Bug Fixes
-- **Refactored Connector class to use power terminology:**
-  - Updated parameter names and calculations to use "power" instead of "energy" for improved clarity
-  - Renamed methods and attributes to reflect instantaneous power consumption rather than total energy
-  - Better aligns with the physical concepts being modeled (power dissipation in fluid flow)
+### Power Consumption Tracking
+- **Implemented comprehensive power consumption tracking system:**
+  - Added structured `power_log` dictionary for tracking power consumption rate (W), energy consumed (J), and time intervals (s)
+  - New `processPowerConsumption()` method for calculating energy consumption based on power rate
+  - Renamed energy-related parameters to power-based terminology for improved accuracy
+  - All processor classes now support power consumption configuration during initialization
+  - Enhanced documentation with detailed parameter descriptions and output explanations
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 
