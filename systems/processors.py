@@ -5,17 +5,34 @@ class Fermentation(Process):
     """
     Models the fermentation process where sugar is converted to ethanol.
     Conversion efficiency determines the fraction of sugar converted.
+    Stoichiometry: 51% of sugar mass becomes ethanol.
     """
     
-    def __init__(self, efficiency=float):
-        super().__init__(name="Fermentation", efficiency=efficiency, massFlowFunction=self.ferment)
-        # Additional initialization for Fermenter can go here
+    def __init__(self, **kwargs):
+        """
+        Initialize Fermentation process.
+        
+        Args:
+            efficiency: Conversion efficiency (default: 1.0)
+            power_consumption_rate: Power consumed by fermentation (default: 0 W)
+            power_consumption_unit: Unit for power consumption (default: "kWh/day")
+        """
+        super().__init__(
+            name=kwargs.get("name", "Fermentation"),
+            massFlowFunction=self.ferment,
+            **kwargs
+        )
 
     
     def ferment(self, input=dict()):
         """
         Fermentation process: converts sugar to ethanol with specified efficiency.
-        Stoichiometry: 51% of sugar mass becomes ethanol.
+        
+        Outputs:
+            - ethanol: 51% of converted sugar mass
+            - water: passes through unchanged
+            - sugar: unconverted sugar (based on efficiency)
+            - fiber: passes through unchanged
         """
         return {
             "ethanol": 0.51 * input["sugar"] * self.efficiency if input.get("sugar") is not None else None, 
@@ -23,7 +40,6 @@ class Fermentation(Process):
             "sugar": (1 - self.efficiency) * input["sugar"] if input.get("sugar") is not None else None,
             "fiber": input["fiber"] if input.get("fiber") is not None else None
         }
-        # pass
 
 
 class Filtration(Process):
@@ -32,15 +48,29 @@ class Filtration(Process):
     Efficiency determines the fraction of fiber that is successfully filtered out.
     """
     
-    def __init__(self, efficiency=float):
-        super().__init__(name="Filtration", efficiency=efficiency, massFlowFunction=self.filter)
-        # Additional initialization for Filter can go here
+    def __init__(self, **kwargs):
+        """
+        Initialize Filtration process.
+        
+        Args:
+            efficiency: Filtration efficiency (default: 1.0)
+            power_consumption_rate: Power consumed by filtration (default: 0 W)
+            power_consumption_unit: Unit for power consumption (default: "kWh/day")
+        """
+        super().__init__(
+            name=kwargs.get("name", "Filtration"),
+            massFlowFunction=self.filter,
+            **kwargs
+        )
 
     
     def filter(self, input=dict()):
         """
         Filtration process: removes fiber from the mixture based on efficiency.
-        Other components pass through unchanged.
+        
+        Outputs:
+            - ethanol, water, sugar: pass through unchanged
+            - fiber: remaining fiber after filtration (based on efficiency)
         """
         return {
             "ethanol": input["ethanol"] if input.get("ethanol") is not None else None, 
@@ -53,18 +83,38 @@ class Filtration(Process):
 class Distillation(Process):
     """
     Models the distillation process for separating ethanol from other components.
-    Higher efficiency means better separation (less impurities in ethanol output).
+    At perfect efficiency (1.0), all ethanol is separated with no impurities.
+    Lower efficiency results in impurities (water, sugar, fiber) being retained
+    proportionally with the ethanol output.
     """
     
-    def __init__(self, efficiency=float):
-        super().__init__(name="Distillation", efficiency=efficiency, massFlowFunction=self.distill)
-        # Additional initialization for Distiller can go here
+    def __init__(self, **kwargs):
+        """
+        Initialize Distillation process.
+        
+        Args:
+            efficiency: Distillation efficiency (default: 1.0)
+            power_consumption_rate: Power consumed by distillation (default: 0 W)
+            power_consumption_unit: Unit for power consumption (default: "kWh/day")
+        """
+        super().__init__(
+            name=kwargs.get("name", "Distillation"),
+            massFlowFunction=self.distill,
+            **kwargs
+        )
 
     
     def distill(self, input=dict()):
         """
-        Distillation process: separates ethanol from water, sugar, and fiber.
-        Inefficiency causes proportional amounts of impurities to remain with ethanol.
+        Distillation process: separates ethanol from impurities.
+        
+        At perfect efficiency (1.0): output contains only ethanol, no impurities.
+        At lower efficiency: impurities (water, sugar, fiber) appear in the output
+        proportional to their input ratios and the inefficiency factor.
+        
+        Outputs:
+            - ethanol: all input ethanol passes through
+            - water, sugar, fiber: amounts based on efficiency and input ratios
         """
         if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
             return {
@@ -89,15 +139,29 @@ class Dehydration(Process):
     Efficiency determines the fraction of water successfully removed.
     """
     
-    def __init__(self, efficiency=float):
-        super().__init__(name="Dehydration", efficiency=efficiency, massFlowFunction=self.dehydrate)
-        # Additional initialization for Dehydrator can go here
+    def __init__(self, **kwargs):
+        """
+        Initialize Dehydration process.
+        
+        Args:
+            efficiency: Dehydration efficiency (default: 1.0)
+            power_consumption_rate: Power consumed by dehydration (default: 0 W)
+            power_consumption_unit: Unit for power consumption (default: "kWh/day")
+        """
+        super().__init__(
+            name=kwargs.get("name", "Dehydration"),
+            massFlowFunction=self.dehydrate,
+            **kwargs
+        )
 
     
     def dehydrate(self, input=dict()):
         """
         Dehydration process: removes water from the mixture based on efficiency.
-        Other components pass through unchanged.
+        
+        Outputs:
+            - ethanol, sugar, fiber: pass through unchanged
+            - water: remaining water after dehydration (based on efficiency)
         """
         if None in [input.get("ethanol"), input.get("water"), input.get("sugar"), input.get("fiber")]:
             return {
