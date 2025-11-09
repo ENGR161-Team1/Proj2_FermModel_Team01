@@ -26,7 +26,8 @@ class Connector:
         self.cross_sectional_area = math.pi * (self.diameter / 2) ** 2
         self.cost = kwargs.get("cost", 0)
     
-    def processDensity(self, **kwargs):
+    @staticmethod
+    def processDensity(**kwargs):
         """
         Calculate fluid density from mass and volumetric flow rates.
         

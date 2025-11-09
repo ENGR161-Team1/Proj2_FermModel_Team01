@@ -1,6 +1,5 @@
 import matplotlib
 import matplotlib.pyplot as plt
-# matplotlib.use("gtk4agg") --- IGNORE ---
 
 
 class Process:
@@ -17,6 +16,13 @@ class Process:
     The class maintains detailed logs of inputs, outputs, and resource consumption
     for process analysis and optimization.
     """
+    
+    # Density constants for component conversion between mass and volume (kg/m³)
+    # These values are at standard conditions (typically 20°C, 1 atm)
+    DENSITY_WATER = 997    # Water density (kg/m³)
+    DENSITY_ETHANOL = 789  # Ethanol density (kg/m³)
+    DENSITY_SUGAR = 1590   # Sugar (sucrose) density (kg/m³)
+    DENSITY_FIBER = 1311   # Fiber (cellulose) density (kg/m³)
     
     def __init__(self, **kwargs):
         """
@@ -144,13 +150,6 @@ class Process:
         # Custom transformation function for mass flow processing
         # If None, process acts as a pass-through (output = input)
         self.massFlowFunction = kwargs.get("massFlowFunction", None)
-        
-        # Density constants for component conversion between mass and volume (kg/m³)
-        # These values are at standard conditions (typically 20°C, 1 atm)
-        self.densityWater = 997    # Water density (kg/m³)
-        self.densityEthanol = 789  # Ethanol density (kg/m³)
-        self.densitySugar = 1590   # Sugar (sucrose) density (kg/m³)
-        self.densityFiber = 1311   # Fiber (cellulose) density (kg/m³)
 
     def volumetricToMass(self, **kwargs):
         """
@@ -193,13 +192,13 @@ class Process:
             mass_flow_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
-                    mass_flow_inputs[component] = inputs[component] * self.densityEthanol
+                    mass_flow_inputs[component] = inputs[component] * self.DENSITY_ETHANOL
                 elif component == "water":
-                    mass_flow_inputs[component] = inputs[component] * self.densityWater
+                    mass_flow_inputs[component] = inputs[component] * self.DENSITY_WATER
                 elif component == "sugar":
-                    mass_flow_inputs[component] = inputs[component] * self.densitySugar
+                    mass_flow_inputs[component] = inputs[component] * self.DENSITY_SUGAR
                 elif component == "fiber":
-                    mass_flow_inputs[component] = inputs[component] * self.densityFiber
+                    mass_flow_inputs[component] = inputs[component] * self.DENSITY_FIBER
                 else:
                     raise ValueError(f"Unknown component: {component}")
             return mass_flow_inputs
@@ -210,17 +209,16 @@ class Process:
             mass_flow_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
-                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.densityEthanol
+                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.DENSITY_ETHANOL
                 elif component == "water":
-                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.densityWater
+                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.DENSITY_WATER
                 elif component == "sugar":
-                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.densitySugar
+                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.DENSITY_SUGAR
                 elif component == "fiber":
-                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.densityFiber
+                    mass_flow_inputs[component] = inputs[component] * total_volumetric_flow * self.DENSITY_FIBER
                 else:
                     raise ValueError(f"Unknown component: {component}")
             return mass_flow_inputs
-            
     
     def massToVolumetric(self, **kwargs):
         """
@@ -263,13 +261,13 @@ class Process:
             volumetric_flow_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
-                    volumetric_flow_inputs[component] = inputs[component] / self.densityEthanol
+                    volumetric_flow_inputs[component] = inputs[component] / self.DENSITY_ETHANOL
                 elif component == "water":
-                    volumetric_flow_inputs[component] = inputs[component] / self.densityWater
+                    volumetric_flow_inputs[component] = inputs[component] / self.DENSITY_WATER
                 elif component == "sugar":
-                    volumetric_flow_inputs[component] = inputs[component] / self.densitySugar
+                    volumetric_flow_inputs[component] = inputs[component] / self.DENSITY_SUGAR
                 elif component == "fiber":
-                    volumetric_flow_inputs[component] = inputs[component] / self.densityFiber
+                    volumetric_flow_inputs[component] = inputs[component] / self.DENSITY_FIBER
                 else:
                     raise ValueError(f"Unknown component: {component}")
             return volumetric_flow_inputs
@@ -280,13 +278,13 @@ class Process:
             volumetric_flow_inputs = dict()
             for component in inputs:
                 if component == "ethanol":
-                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.densityEthanol
+                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.DENSITY_ETHANOL
                 elif component == "water":
-                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.densityWater
+                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.DENSITY_WATER
                 elif component == "sugar":
-                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.densitySugar
+                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.DENSITY_SUGAR
                 elif component == "fiber":
-                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.densityFiber
+                    volumetric_flow_inputs[component] = inputs[component] * total_mass_flow / self.DENSITY_FIBER
                 else:
                     raise ValueError(f"Unknown component: {component}")
             return volumetric_flow_inputs
