@@ -1,117 +1,93 @@
 # Ethanol Plant Model Documentation
 
-**Version:** 0.5.2
+**Version:** 0.6.1
 
-Welcome to the comprehensive documentation for the Ethanol Plant Model project. This documentation covers all aspects of the system, from basic usage to advanced features.
+Welcome to the comprehensive documentation for the Ethanol Plant Model project. This documentation provides detailed information about installation, usage, API reference, and examples.
 
-## What's New in v0.5.2
+## 📋 Table of Contents
 
-- **Refactored Power Terminology**: Updated terminology for clarity and consistency
-- **Enhanced Error Messages**: More descriptive error messages for common issues
-- **Improved Logging**: Added timestamps and improved formatting
-- **Updated Examples**: Revised examples to reflect latest API changes
+1. **[Getting Started](getting-started.md)** - Installation instructions and basic setup
+2. **[API Reference](api-reference.md)** - Complete API documentation for all classes and methods
+3. **[Process Systems](process-systems.md)** - Detailed guide to process units (Fermentation, Filtration, etc.)
+4. **[Connector Systems](connector-systems.md)** - Fluid transport components (Pipes, Bends, Valves)
+5. **[Examples](examples.md)** - Practical examples and tutorials
 
-## Documentation Structure
+## 🆕 What's New in v0.6.1
 
-### 📖 [Getting Started](getting-started.md)
-Learn how to install the package and run your first simulation. Includes:
-- Installation instructions for pip and uv
-- System dependencies
-- Quick start examples
-- Basic usage patterns
+### Documentation Enhancements
 
-### 📚 [API Reference](api-reference.md)
-Complete reference for all classes and methods. Covers:
-- System base class and methods
-- Process systems (Fermentation, Filtration, Distillation, Dehydration)
-- Connector components (Pipe, Bend, Valve)
-- Method signatures and parameters
-- Return value formats
+Version 0.6.1 focuses on comprehensive documentation improvements:
 
-### ⚙️ [Process Systems](process-systems.md)
-Detailed guide to chemical process systems:
-- Fermentation chemistry and efficiency
-- Filtration mechanics
-- Distillation separation principles
-- Dehydration processes
-- Configuration and usage examples
+- **Enhanced Docstrings**: All Process and Connector class methods now have detailed docstrings with:
+  - Complete parameter descriptions including types and units
+  - Detailed return value documentation
+  - Exception documentation for error conditions
+  - Clear explanations of method functionality
 
-### 🔌 [Connector Systems](connector-systems.md)
-Guide to fluid transport components:
-- Pipe friction calculations (Darcy-Weisbach)
-- Bend energy losses
-- Valve resistance modeling
-- Energy conservation principles
-- Practical usage examples
+- **Improved Code Clarity**: Added extensive inline comments explaining:
+  - Mass to volumetric flow rate conversions
+  - Energy and power consumption tracking
+  - Cost calculation mechanisms
+  - Logging structures and data storage
 
-### 💡 [Examples](examples.md)
-Practical examples and tutorials:
-- Complete ethanol production pipeline
-- Batch processing
-- Data visualization
-- Iterative processing
-- Advanced configurations
+- **Better Physical Explanations**: Documented the physics behind:
+  - Darcy-Weisbach friction losses in pipes
+  - Bend losses due to flow direction changes
+  - Valve resistance calculations
 
-## Quick Navigation
+## 🚀 Quick Navigation
 
-**New to the project?** Start with [Getting Started](getting-started.md)
+### For New Users
+Start with [Getting Started](getting-started.md) to install the package and run your first simulation.
 
-**Looking for specific methods?** Check the [API Reference](api-reference.md)
+### For Developers
+Check out the [API Reference](api-reference.md) for detailed documentation of all classes and methods with comprehensive parameter descriptions and examples.
 
-**Need examples?** Browse the [Examples](examples.md) section
+### For Process Engineers
+Review [Process Systems](process-systems.md) and [Connector Systems](connector-systems.md) for detailed information about the physical models and engineering principles.
 
-**Working with connectors?** See [Connector Systems](connector-systems.md)
+### For Learning
+Explore [Examples](examples.md) for practical tutorials and use cases, now with improved inline documentation for easier understanding.
 
-## Key Concepts
+## 📊 Project Features
 
-### Input/Output Types
+- ✅ Mass flow rate and volumetric flow rate balance calculations
+- ✅ Power consumption tracking with configurable rates and units
+- ✅ Energy consumption tracking with detailed logging
+- ✅ Cost tracking for process economics
+- ✅ Energy loss modeling for fluid transport
+- ✅ Configurable efficiency parameters
+- ✅ Flexible input/output formats
+- ✅ Comprehensive logging system
+- ✅ Built-in visualization capabilities
+- ✅ Batch processing with iterative methods
+- ✅ **NEW**: Comprehensive documentation with detailed docstrings and inline comments
 
-The system supports three data format types:
+## 💡 Documentation Conventions
 
-- **`amount`**: Absolute quantities (kg for mass, m³/s for flow)
-- **`composition`**: Fractional proportions (0-1, sum = 1)
-- **`full`**: Both amount and composition dictionaries
+Throughout this documentation:
+- **Parameters** are documented with types, units, and default values
+- **Returns** include type information and explanations
+- **Raises** sections document exceptions and error conditions
+- **Examples** demonstrate practical usage patterns
+- **Physical principles** are explained alongside calculations
 
-### Logging Structure
+## 🔗 Additional Resources
 
-Version 0.4.0 introduced a new logging structure:
+- [Main README](../README.md) - Project overview and quick start
+- [CHANGELOG](../CHANGELOG.md) - Version history and updates
+- [GitHub Repository](https://github.com/ENGR161-Team1/EthanolPlantModel) - Source code and issues
+- [License](../LICENSE) - MIT License details
 
-```python
-{
-    "mass": {
-        "total_mass": [],
-        "amount": {"ethanol": [], "water": [], "sugar": [], "fiber": []},
-        "composition": {"ethanol": [], "water": [], "sugar": [], "fiber": []}
-    },
-    "flow": {
-        "total_flow": [],
-        "amount": {"ethanol": [], "water": [], "sugar": [], "fiber": []},
-        "composition": {"ethanol": [], "water": [], "sugar": [], "fiber": []}
-    }
-}
-```
+## 📝 Contributing to Documentation
 
-Note: `composition` no longer includes a `total` key (compositions must sum to 1).
+If you find areas where documentation could be improved:
+1. Check the source code for inline comments and docstrings
+2. Review existing documentation files
+3. Submit issues or pull requests with suggestions
 
-### Components
+All documentation follows [NumPy docstring conventions](https://numpydoc.readthedocs.io/en/latest/format.html) for consistency.
 
-The model tracks four components throughout the process:
-- **Ethanol**: Product of fermentation
-- **Water**: Solvent and fermentation byproduct
-- **Sugar**: Raw material for fermentation
-- **Fiber**: Solid byproduct removed by filtration
+---
 
-## Support
-
-For issues or questions:
-- Check the documentation sections above
-- Review the [Examples](examples.md)
-- Contact the development team (see README.md)
-
-## Contributing
-
-We welcome contributions! Please:
-1. Review the existing documentation
-2. Follow the established code patterns
-3. Add tests for new features
-4. Update documentation as needed
+*Last updated: Version 0.6.1 - November 2025*
