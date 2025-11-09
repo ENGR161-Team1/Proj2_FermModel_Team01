@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.6.0
+**Version:** 0.6.1
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -133,18 +133,21 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.6.0)
+## Recent Updates (v0.6.1)
 
-### Cost Tracking and Consumption Logging
-- **Implemented comprehensive cost tracking system:**
-  - Added `cost_per_flow` parameter for tracking cost per unit volumetric flow rate ($/m³/s)
-  - New `cost_per_unit_flow` and `cost_incurred` fields in consumption logs
-  - Optional `store_cost` parameter in processing methods for flexible cost logging
-  - Cost calculations automatically convert mass flow to volumetric flow for accurate pricing
-- **Refactored consumption tracking:**
-  - Renamed `power_log` to `consumption_log` for unified tracking of power, energy, and cost
-  - Integrated cost tracking alongside existing power/energy metrics
-  - Enhanced project metadata with comprehensive keywords and additional URLs
+### Documentation Enhancements
+- **Comprehensive documentation improvements:**
+  - Added detailed docstrings for all Process and Connector class methods
+  - Enhanced parameter descriptions with types, units, and default values
+  - Improved method documentation with clear descriptions of functionality
+  - Added return value documentation with types and explanations
+  - Documented error conditions and exceptions raised by methods
+  - Enhanced code comments explaining conversion calculations and logging behavior
+- **Improved code clarity:**
+  - Added inline comments for complex calculations and conversions
+  - Better explanation of mass/volumetric flow conversions
+  - Clear documentation of energy and cost tracking mechanisms
+  - Enhanced understanding of connector power loss calculations
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 

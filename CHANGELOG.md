@@ -5,6 +5,25 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-11-09
+
+### Improved
+- **Comprehensive documentation enhancements:**
+  - Added detailed docstrings for all Process class methods with complete parameter descriptions
+  - Enhanced Connector class documentation with clear explanations of power loss mechanisms
+  - Improved method documentation across all classes with:
+    - Type hints and units for all parameters
+    - Detailed descriptions of return values
+    - Documentation of exceptions and error conditions
+    - Clear explanations of method functionality and use cases
+  - Added extensive inline comments explaining:
+    - Conversion calculations between mass and volumetric flow rates
+    - Energy and power consumption tracking mechanisms
+    - Cost calculation methods
+    - Logging structures and data storage patterns
+  - Enhanced code readability with better variable naming and calculation explanations
+  - Documented physical principles behind connector power loss calculations (Darcy-Weisbach, bend losses, valve resistance)
+
 ## [0.6.0] - 2025-11-09
 
 ### Added
