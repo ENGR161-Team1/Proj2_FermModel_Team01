@@ -1,18 +1,15 @@
-# Documentation
+# Ethanol Plant Model Documentation
 
-Welcome to the Ethanol Plant Model documentation. This guide will help you understand and use the ethanol production plant simulation system.
+**Version:** 0.5.2
 
-## Version
+Welcome to the comprehensive documentation for the Ethanol Plant Model project. This documentation covers all aspects of the system, from basic usage to advanced features.
 
-Current version: **0.4.0**
+## What's New in v0.5.2
 
-## What's New in v0.4.0
-
-- **Refactored Connector API**: All connector methods now use `**kwargs` for improved flexibility
-- **Enhanced Flow Calculations**: Improved cube root calculation for accurate energy balance
-- **Updated Logging Structure**: Separated `amount` and `composition` in logs (removed `total` from composition)
-- **Better Error Handling**: Comprehensive input validation and error messages
-- **Improved Mass/Flow Conversions**: More accurate density-based conversions
+- **Refactored Power Terminology**: Updated terminology for clarity and consistency
+- **Enhanced Error Messages**: More descriptive error messages for common issues
+- **Improved Logging**: Added timestamps and improved formatting
+- **Updated Examples**: Revised examples to reflect latest API changes
 
 ## Documentation Structure
 

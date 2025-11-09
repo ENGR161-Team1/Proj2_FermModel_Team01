@@ -1,5 +1,7 @@
 # Getting Started
 
+**Version:** 0.5.2
+
 This guide will help you get started with the Ethanol Plant Model.
 
 ## Installation

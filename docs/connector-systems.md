@@ -90,22 +90,20 @@ output_flow = ((output_energy * area) / (density * interval)) ^ (1/3)
 
 ## Pipe
 
-Models straight pipe segments using the Darcy-Weisbach equation for friction losses.
+Models straight pipe segments with friction losses using the Darcy-Weisbach equation.
 
-### Physics
-
-**Darcy-Weisbach Equation:**
+**Power Loss Formula:**
 ```
-ΔP = f * (L/D) * (ρv²/2)
-Energy loss = mass * (8fLQ²) / (π²D⁵)
+P_loss = ṁ × (8 × f × L × Q²) / (π² × D⁵)
 ```
 
 Where:
-- `f` = Darcy friction factor
-- `L` = pipe length
-- `D` = pipe diameter
-- `Q` = volumetric flow rate
-- `ρ` = fluid density
+- P_loss = Power consumed due to friction (Watts)
+- ṁ = Mass flow rate (kg/s)
+- f = Darcy friction factor (dimensionless)
+- L = Pipe length (m)
+- Q = Volumetric flow rate (m³/s)
+- D = Pipe diameter (m)
 
 ### Initialization
 
@@ -185,22 +183,18 @@ for diameter in [0.05, 0.10, 0.15, 0.20]:
 
 ## Bend
 
-Models pipe bends or elbows where flow direction changes, causing energy loss.
+Models elbows and bends with power losses based on flow direction changes.
 
-### Physics
-
-Energy is lost due to:
-- Flow separation
-- Secondary flows
-- Direction change
-
+**Power Loss Formula:**
 ```
-Energy loss = mass * (1 - bend_factor) * (v²/2)
+P_loss = ṁ × (1 - η) × v² / 2
 ```
 
 Where:
-- `bend_factor` = efficiency (1.0 = no loss, lower = more loss)
-- `v` = flow velocity
+- P_loss = Power consumed in bend (Watts)
+- ṁ = Mass flow rate (kg/s)
+- η = Bend efficiency factor (0 to 1)
+- v = Flow velocity (m/s)
 
 ### Initialization
 
@@ -294,18 +288,18 @@ print(f"\nTotal loss through 4 bends: {total_loss:.1%}")
 
 ## Valve
 
-Models flow control valves with adjustable resistance.
+Models valves with adjustable resistance and associated power losses.
 
-### Physics
-
-Energy loss proportional to dynamic pressure:
-
+**Power Loss Formula:**
 ```
-Energy loss = mass * (v²/2) * resistance_coefficient
+P_loss = ṁ × K × v² / 2
 ```
 
 Where:
-- `resistance_coefficient` = valve-specific loss coefficient
+- P_loss = Power consumed through valve (Watts)
+- ṁ = Mass flow rate (kg/s)
+- K = Resistance coefficient (dimensionless)
+- v = Flow velocity (m/s)
 
 ### Initialization
 

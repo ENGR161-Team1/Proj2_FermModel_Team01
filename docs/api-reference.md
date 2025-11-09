@@ -266,3 +266,101 @@ result = dehydrator.processMassFlow(
 - `total_flow` → `total_volumetric_flow`
 - `total_mass_list` → `total_mass_flow_list`
 - `total_flow_list` → `total_volumetric_flow_list`
+
+## Connector Classes
+
+### Base Connector Class
+
+#### `__init__(**kwargs)`
+
+Initialize a connector with power function and diameter.
+
+**Parameters:**
+- `power_consumed` (function): Function to calculate power consumed by connector in Watts
+- `diameter` (float): Inner diameter of the connector in meters (default: 0.1)
+
+#### `processPower(**kwargs)`
+
+Calculate output kinetic power after power losses.
+
+**Parameters:**
+- `input_power` (float): Input kinetic power in Watts
+
+**Returns:**
+- `float`: Output kinetic power in Watts after accounting for losses
+
+#### `processFlow(**kwargs)`
+
+Calculate output volumetric flow rate after power losses.
+
+**Parameters:**
+- `input_volumetric_flow` (float): Input volumetric flow rate in m³/s
+- `input_mass_flow` (float): Input mass flow rate in kg/s
+
+**Returns:**
+- `float`: Output volumetric flow rate in m³/s
+
+### Pipe Class
+
+Represents a straight pipe segment with friction losses calculated using the Darcy-Weisbach equation.
+
+#### `__init__(**kwargs)`
+
+**Parameters:**
+- `length` (float): Length of the pipe in meters (default: 1.0)
+- `friction_factor` (float): Darcy friction factor (default: 0.02)
+- `diameter` (float): Inner diameter in meters (default: 0.1)
+
+#### `pipePowerFunction(**kwargs)`
+
+Calculate power consumed due to friction in the pipe.
+
+**Parameters:**
+- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
+- `input_mass_flow` (float): Mass flow rate in kg/s
+
+**Returns:**
+- `float`: Power consumed due to friction (Watts)
+
+### Bend Class
+
+Represents a pipe bend or elbow with power losses proportional to dynamic pressure and bend geometry.
+
+#### `__init__(**kwargs)`
+
+**Parameters:**
+- `bend_radius` (float): Radius of curvature in meters (default: 0.5)
+- `bend_factor` (float): Efficiency factor, 1.0 = no loss (default: 0.9)
+- `diameter` (float): Inner diameter in meters (default: 0.1)
+
+#### `bendPowerFunction(**kwargs)`
+
+Calculate power consumed in the bend due to flow direction change.
+
+**Parameters:**
+- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
+- `input_mass_flow` (float): Mass flow rate in kg/s
+
+**Returns:**
+- `float`: Power consumed due to bend (Watts)
+
+### Valve Class
+
+Represents a valve with adjustable flow resistance and power loss proportional to dynamic pressure.
+
+#### `__init__(**kwargs)`
+
+**Parameters:**
+- `resistance_coefficient` (float): Flow resistance coefficient (default: 1.0)
+- `diameter` (float): Inner diameter in meters (default: 0.1)
+
+#### `valvePowerFunction(**kwargs)`
+
+Calculate power consumed through the valve.
+
+**Parameters:**
+- `input_volumetric_flow` (float): Volumetric flow rate in m³/s
+- `input_mass_flow` (float): Mass flow rate in kg/s
+
+**Returns:**
+- `float`: Power consumed due to valve resistance (Watts)
