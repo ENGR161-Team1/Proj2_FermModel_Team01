@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.4.2
+**Version:** 0.5.0
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -26,12 +26,12 @@ from systems.processors import Fermentation
 # Create a fermentation system with 95% efficiency
 fermenter = Fermentation(efficiency=0.95)
 
-# Process inputs - note the updated API
-result = fermenter.processMass(
+# Process mass flow rate inputs
+result = fermenter.processMassFlow(
     inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
     input_type="amount",
     output_type="full",
-    store_outputs=False
+    store_outputs=True
 )
 
 print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
@@ -41,7 +41,8 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 
 ## Features
 
-- ✅ Mass and volumetric flow balance calculations
+- ✅ Mass flow rate and volumetric flow rate balance calculations
+- ✅ Energy consumption tracking for all processes
 - ✅ Energy loss modeling for fluid transport (Darcy-Weisbach, bend losses)
 - ✅ Configurable efficiency parameters for all process units
 - ✅ Flexible input/output formats (amount, composition, or full)
@@ -58,6 +59,12 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 2. **Filtration** - Removes solid particles and fiber content
 3. **Distillation** - Separates and concentrates ethanol from impurities
 4. **Dehydration** - Removes remaining water content for high-purity ethanol
+
+All processes support:
+- Mass flow rate processing via `processMassFlow()`
+- Volumetric flow rate processing via `processVolumetricFlow()`
+- Energy consumption tracking via `processEnergyConsumption()`
+- Batch processing via `iterateMassFlowInputs()` and `iterateVolumetricFlowInputs()`
 
 ### Fluid Transport Components
 
@@ -123,7 +130,42 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.4.2)
+## Recent Updates (v0.5.0)
+
+### Major API Improvements
+- **Renamed methods for clarity:**
+  - `processMass()` → `processMassFlow()` - Process mass flow rate inputs
+  - `processFlow()` → `processVolumetricFlow()` - Process volumetric flow rate inputs
+  - `iterateMassInputs()` → `iterateMassFlowInputs()` - Batch process mass flow rates
+  - `iterateFlowInputs()` → `iterateVolumetricFlowInputs()` - Batch process volumetric flow rates
+  - `flowToMass()` → `volumetricToMass()` - Convert volumetric to mass flow rates
+  - `massToFlow()` → `massToVolumetric()` - Convert mass to volumetric flow rates
+
+- **Updated internal attribute names:**
+  - `massFunction` → `massFlowFunction` - Process-specific mass flow rate function
+  - Log structure keys updated: `mass` → `mass_flow`, `flow` → `volumetric_flow`
+  - `total_mass` → `total_mass_flow`, `total_flow` → `total_volumetric_flow`
+
+### New Features
+- **Energy consumption tracking:**
+  - Added `energy_consumed_log` to track energy usage over time
+  - New `processEnergyConsumption()` method for calculating energy consumption
+  - Configurable `energy_consumption_rate` with unit conversion support
+
+### Breaking Changes
+⚠️ **This version introduces breaking changes to the API.** Code using v0.4.x will need updates:
+
+```python
+# Old (v0.4.x)
+result = processor.processMass(inputs=data)
+processor.iterateMassInputs(inputValues=batch_data)
+
+# New (v0.5.0)
+result = processor.processMassFlow(inputs=data)
+processor.iterateMassFlowInputs(inputValues=batch_data)
+```
+
+### Previous Updates (v0.4.2)
 
 - Added `processEnergy` method to Connector class for improved energy calculations
 - Refactored `processFlow` to use the new `processEnergy` method for cleaner code organization
