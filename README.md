@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.5.1
+**Version:** 0.5.2
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -131,20 +131,13 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.5.1)
+## Recent Updates (v0.5.2)
 
 ### Bug Fixes
-- **Fixed parameter name in Process class initialization:**
-  - Corrected `massFunction` → `massFlowFunction` in kwargs.get() call
-  - Ensures proper initialization of mass flow processing functions
-
-- **Fixed Connector energy calculation:**
-  - Removed redundant `self` reference in `processEnergy()` call
-  - Corrected method invocation in `processFlow()` method
-
-- **Fixed output flow calculation in Connector class:**
-  - Replaced `math.root()` with exponentiation operator `** (1/3)`
-  - Improves compatibility and calculation accuracy for cube root operations
+- **Refactored Connector class to use power terminology:**
+  - Updated parameter names and calculations to use "power" instead of "energy" for improved clarity
+  - Renamed methods and attributes to reflect instantaneous power consumption rather than total energy
+  - Better aligns with the physical concepts being modeled (power dissipation in fluid flow)
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 

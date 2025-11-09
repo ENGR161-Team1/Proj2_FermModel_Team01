@@ -5,6 +5,15 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-11-08
+
+### Changed
+- **Refactored Connector class to use power terminology:**
+  - Updated parameter names from energy-based to power-based terminology for improved accuracy and clarity
+  - Renamed methods and calculations to reflect instantaneous power consumption rather than total energy
+  - Better alignment with the physical concepts being modeled (power dissipation in fluid flow systems)
+  - This change improves code readability and maintains consistency with engineering terminology
+
 ## [0.5.1] - 2025-11-08
 
 ### Fixed
@@ -12,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Connector energy calculation: removed redundant `self` reference in `processEnergy()` call, correcting method invocation in `processFlow()` method
 - Fixed output flow calculation in Connector class: replaced `math.root()` with exponentiation operator `** (1/3)` to improve compatibility and calculation accuracy for cube root operations
 
-## [0.5.0] - 2025-11-XX
+## [0.5.0] - 2025-11-08
 
 ### Changed - Major API Improvements
 - **Renamed methods for clarity:**
@@ -47,7 +56,7 @@ result = processor.processMassFlow(inputs=data)
 processor.iterateMassFlowInputs(inputValues=batch_data)
 ```
 
-## [0.4.2] - 2025-XX-XX
+## [0.4.2] - 2025-11-08
 
 ### Added
 - Added `processEnergy` method to Connector class for improved energy calculations
@@ -59,7 +68,7 @@ processor.iterateMassFlowInputs(inputValues=batch_data)
 ### Fixed
 - Fixed cube root calculation using `math.root` for accurate flow rate determination
 
-## [0.4.1] - 2025-XX-XX
+## [0.4.1] - 2025-11-08
 
 ### Changed
 - Restructured codebase: renamed `System` to `Process` and split into separate files
@@ -68,7 +77,7 @@ processor.iterateMassFlowInputs(inputValues=batch_data)
 - Improved code organization and modularity
 - Updated import statements to use relative imports
 
-## [0.4.0] - 2025-XX-XX
+## [0.4.0] - 2025-11-07
 
 ### Changed
 - Refactored connector API to use kwargs for improved flexibility
