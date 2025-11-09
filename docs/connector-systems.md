@@ -1,704 +1,549 @@
 # Connector Systems
 
-Comprehensive guide to fluid transport components in the Ethanol Plant Model (v0.4.0).
+**Version:** 0.6.1
+
+This document provides detailed information about fluid transport connectors in the Ethanol Plant Model.
+
+## 🆕 Enhanced Documentation (v0.6.1)
+
+All connector classes now include:
+- **Detailed physical principles** in docstrings explaining loss mechanisms
+- **Mathematical formulas** documented with variable definitions
+- **Step-by-step calculation explanations** in inline comments
+- **Parameter documentation** with types, units, and physical meaning
 
 ## Overview
 
-Connectors model the physical components that transport fluids between process systems. They calculate energy losses due to friction, direction changes, and flow resistance.
+Connectors represent physical components that transport fluids between process units. They model realistic energy losses while conserving mass.
 
-### Key Features (v0.4.0)
+### Key Principles (Documented in Code)
 
-- **Kwargs-based API**: All methods use `**kwargs` for flexibility
-- **Energy conservation**: Mass is conserved, energy is dissipated
-- **Realistic physics**: Based on fluid dynamics equations
-- **Flexible parameters**: Configurable dimensions and properties
-
-### Available Connectors
-
-1. **Pipe** - Straight segments with friction losses
-2. **Bend** - Elbows with direction change losses
-3. **Valve** - Flow control with adjustable resistance
+1. **Mass Conservation** - Input mass flow = Output mass flow
+2. **Energy Dissipation** - Kinetic energy lost to friction, turbulence, resistance
+3. **Power Loss Mechanisms** - Documented for each connector type
 
 ---
 
 ## Base Connector Class
 
-The `Connector` class provides the foundation for all fluid transport components.
+### Class: `Connector`
 
-### Methods
-
-#### `__init__(**kwargs)`
-Initialize a connector with energy function and diameter.
-
-**Parameters:**
-- `energy_consumed`: Function to calculate energy consumed by connector
-- `diameter`: Inner diameter of the connector in meters (default: 0.1m)
-
-#### `processDensity(**kwargs)`
-Calculate fluid density based on mass and volumetric flow rates.
-
-**Parameters:**
-- `input_flow`: Volumetric flow rate in m³/s
-- `input_mass`: Mass flow rate in kg/s
-
-**Returns:** Density in kg/m³, or 0 if volumetric flow is zero
-
-#### `processEnergy(**kwargs)`
-Calculate output kinetic energy after energy losses.
-
-**Parameters:**
-- `input_energy`: Input kinetic energy in Joules
-
-**Returns:** Output kinetic energy in Joules after subtracting energy losses
-
-**Note:** This method calls the connector's `energyConsumed` function to determine losses.
-
-#### `processFlow(**kwargs)`
-Calculate output volumetric flow rate after energy losses.
-
-**Parameters:**
-- `input_flow`: Input volumetric flow rate in m³/s
-- `input_mass`: Mass flow rate in kg/s
-- `interval`: Time interval in seconds (default: 1s)
-
-**Returns:** Output volumetric flow rate in m³/s
-
-**Process:**
-1. Calculates flow velocity from input flow and cross-sectional area
-2. Computes input kinetic energy over the time interval
-3. Uses `processEnergy` to determine output energy after losses
-4. Calculates output flow rate using inverse kinetic energy formula with cube root
-
-### Energy Balance
-
-The connector calculates energy dissipation:
+**Enhanced Documentation (v0.6.1):** Complete physics documentation in docstrings.
 
 ```python
-# Input kinetic energy
-velocity = flow / cross_sectional_area
-input_energy = interval * mass * (velocity² / 2)
+from systems.connectors import Connector
 
-# Energy loss (calculated by specific connector)
-energy_loss = energyConsumed(input_flow, input_mass)
+# Base class with documented parameters
+connector = Connector(
+    power_consumed=power_function,  # callable: Function to calculate power loss (W)
+    diameter=0.1,                   # float: Inner diameter in meters
+    cost=100.0                      # float: Component cost in USD
+)
+```
 
-# Output energy and flow
-output_energy = input_energy - energy_loss
-output_flow = ((output_energy * area) / (density * interval)) ^ (1/3)
+### Core Methods (Enhanced Documentation)
+
+#### `processDensity()`
+
+**Documented Principle:** Calculate fluid density from flow rates.
+
+```python
+def processDensity(self, **kwargs):
+    """
+    Calculate fluid density from mass and volumetric flow rates.
+    
+    Uses the relationship: density = mass_flow / volumetric_flow
+    
+    Args:
+        input_volumetric_flow (float, optional): Volumetric flow rate in m³/s. Default: 0
+        input_mass_flow (float, optional): Mass flow rate in kg/s. Default: 0
+    
+    Returns:
+        float: Fluid density in kg/m³. Returns 0 if volumetric flow is zero.
+    """
+```
+
+**Physical Meaning (Documented):**
+- Density relates mass to volume: ρ = m/V
+- Units: kg/m³ = (kg/s) / (m³/s)
+- Zero handling prevents division errors
+
+#### `processPower()`
+
+**Documented Principle:** Calculate output power after losses.
+
+```python
+def processPower(self, **kwargs):
+    """
+    Calculate output kinetic power after accounting for power losses.
+    
+    The output power is the input power minus the power consumed by the connector
+    due to friction, resistance, or other loss mechanisms.
+    
+    Args:
+        input_power (float, optional): Input kinetic power in Watts. Default: 0
+    
+    Returns:
+        float: Output kinetic power in Watts after losses.
+    """
+```
+
+**Energy Balance (Documented in Code):**
+```python
+# Energy conservation with losses:
+# P_out = P_in - P_loss
+# Where P_loss depends on connector type (friction, bend, valve)
+```
+
+#### `processFlow()`
+
+**Documented Principle:** Calculate flow rate changes due to energy losses.
+
+```python
+def processFlow(self, **kwargs):
+    """
+    Calculate output volumetric flow rate after power losses in the connector.
+    
+    This method:
+    1. Calculates flow velocity from volumetric flow and cross-sectional area
+    2. Computes input kinetic power using velocity and mass flow
+    3. Determines output power after losses using processPower()
+    4. Calculates resulting output volumetric flow rate
+    
+    Args:
+        input_volumetric_flow (float, optional): Input volumetric flow rate in m³/s. Default: 0
+        input_mass_flow (float, optional): Input mass flow rate in kg/s. Default: 0
+    
+    Returns:
+        float: Output volumetric flow rate in m³/s after accounting for power losses.
+    """
+```
+
+**Step-by-Step Calculation (Documented in Code):**
+```python
+# Step 1: Calculate velocity
+# Q = v × A, so v = Q / A
+velocity = volumetric_flow / cross_sectional_area  # m/s
+
+# Step 2: Calculate input kinetic power
+# P = (1/2) × m_dot × v²
+input_power = mass_flow * (velocity ** 2) / 2  # W
+
+# Step 3: Apply power loss
+output_power = self.processPower(input_power=input_power)  # W
+
+# Step 4: Calculate output flow from output power
+# Derived from kinetic power formula
+output_flow = (2 * output_power * A² / ρ) ^ (1/3)  # m³/s
 ```
 
 ---
 
-## Pipe
+## Pipe Connector
 
-Models straight pipe segments with friction losses using the Darcy-Weisbach equation.
+### Class: `Pipe`
 
-**Power Loss Formula:**
-```
-P_loss = ṁ × (8 × f × L × Q²) / (π² × D⁵)
-```
-
-Where:
-- P_loss = Power consumed due to friction (Watts)
-- ṁ = Mass flow rate (kg/s)
-- f = Darcy friction factor (dimensionless)
-- L = Pipe length (m)
-- Q = Volumetric flow rate (m³/s)
-- D = Pipe diameter (m)
-
-### Initialization
+**Enhanced Documentation (v0.6.1):** Complete Darcy-Weisbach equation documentation.
 
 ```python
 from systems.connectors import Pipe
 
+# Initialize with documented parameters
 pipe = Pipe(
-    length=10.0,           # meters
-    diameter=0.15,         # meters
-    friction_factor=0.02   # dimensionless
+    length=10.0,           # float: Pipe length in meters
+    friction_factor=0.02,  # float: Darcy friction factor (dimensionless)
+    diameter=0.1,          # float: Inner diameter in meters
+    cost=500.0             # float: Pipe cost in USD
 )
 ```
 
-### Parameters
+### Physical Principle: Darcy-Weisbach Equation (Fully Documented)
 
-- `length` (float): Pipe length in meters (default: 1.0)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
-- `friction_factor` (float): Darcy friction factor (default: 0.02)
-
-### Examples
-
-#### Basic Usage
-```python
-pipe = Pipe(length=10, diameter=0.1, friction_factor=0.02)
-
-output_flow = pipe.processFlow(
-    input_flow=0.05,   # 0.05 m³/s input
-    input_mass=50,     # 50 kg/s
-    interval=1
-)
-
-print(f"Input flow: 0.05 m³/s")
-print(f"Output flow: {output_flow:.4f} m³/s")
-print(f"Flow reduction: {(0.05 - output_flow) / 0.05:.1%}")
+**Pressure Drop Formula:**
+```
+ΔP = f × (L/D) × (ρv²/2)
 ```
 
-#### Comparing Pipe Lengths
-```python
-for length in [1, 5, 10, 20]:
-    pipe = Pipe(length=length, diameter=0.1, friction_factor=0.02)
-    output = pipe.processFlow(
-        input_flow=0.05,
-        input_mass=50,
-        interval=1
-    )
-    loss = (0.05 - output) / 0.05
-    print(f"Length {length}m: {loss:.1%} flow loss")
+**Where (All Variables Documented in Code):**
+- `ΔP` = Pressure drop (Pa)
+- `f` = Darcy friction factor (dimensionless)
+- `L` = Pipe length (m)
+- `D` = Pipe diameter (m)
+- `ρ` = Fluid density (kg/m³)
+- `v` = Flow velocity (m/s)
+
+**Power Loss Calculation (Documented):**
 ```
-
-#### Diameter Effect
-```python
-input_flow = 0.05
-input_mass = 50
-
-for diameter in [0.05, 0.10, 0.15, 0.20]:
-    pipe = Pipe(length=10, diameter=diameter, friction_factor=0.02)
-    output = pipe.processFlow(
-        input_flow=input_flow,
-        input_mass=input_mass,
-        interval=1
-    )
-    loss = (input_flow - output) / input_flow
-    print(f"Diameter {diameter}m: {loss:.1%} flow loss")
-```
-
-### Friction Factor Selection
-
-| Surface Type | Friction Factor (f) | Notes |
-|-------------|---------------------|--------|
-| Smooth (drawn tubing) | 0.01-0.015 | PVC, glass |
-| Commercial steel | 0.02-0.025 | New pipes |
-| Galvanized iron | 0.02-0.03 | Standard industrial |
-| Cast iron | 0.025-0.035 | Older pipes |
-| Rough/corroded | 0.04-0.10 | Poor condition |
-
----
-
-## Bend
-
-Models elbows and bends with power losses based on flow direction changes.
-
-**Power Loss Formula:**
-```
-P_loss = ṁ × (1 - η) × v² / 2
+P_loss = ΔP × Q
 ```
 
 Where:
-- P_loss = Power consumed in bend (Watts)
-- ṁ = Mass flow rate (kg/s)
-- η = Bend efficiency factor (0 to 1)
-- v = Flow velocity (m/s)
+- `P_loss` = Power consumed (W)
+- `Q` = Volumetric flow rate (m³/s)
 
-### Initialization
+### Method: `pipePowerFunction()`
+
+**Complete Documentation:**
+
+```python
+def pipePowerFunction(self, **kwargs):
+    """
+    Calculate power consumed due to friction in the pipe.
+    
+    Uses the Darcy-Weisbach equation for pressure drop:
+    ΔP = f × (L/D) × (ρv²/2)
+    Power loss = ΔP × Q
+    
+    Args:
+        input_volumetric_flow (float, optional): Volumetric flow rate in m³/s. Default: 0
+        input_mass_flow (float, optional): Mass flow rate in kg/s. Default: 0
+    
+    Returns:
+        float: Power consumed due to frictional losses in Watts.
+    """
+```
+
+**Inline Comments Explain:**
+```python
+# Darcy-Weisbach power loss formula
+# Derived from: P = ΔP × Q where ΔP = f(L/D)(ρv²/2)
+# Simplified to: P = m_dot × (8fLQ²)/(π²D⁵)
+return mass_flow * (8 * f * L * Q**2) / (π**2 * D**5)  # Watts
+```
+
+### Friction Factor Guide (Documented)
+
+**Typical Values (Commented in Code):**
+- Smooth pipes (PVC, drawn tubing): `f ≈ 0.015 - 0.020`
+- Commercial steel: `f ≈ 0.020 - 0.025`
+- Rough pipes: `f ≈ 0.025 - 0.035`
+
+---
+
+## Bend Connector
+
+### Class: `Bend`
+
+**Enhanced Documentation (v0.6.1):** Secondary flow physics explained.
 
 ```python
 from systems.connectors import Bend
 
+# Initialize with documented parameters
 bend = Bend(
-    bend_radius=0.5,    # meters
-    bend_factor=0.9,    # efficiency (0-1)
-    diameter=0.1        # meters
+    bend_radius=0.5,      # float: Radius of curvature in meters
+    bend_factor=0.9,      # float: Efficiency factor (0-1), where 1.0 = no loss
+    diameter=0.1,         # float: Inner diameter in meters
+    cost=150.0            # float: Bend cost in USD
 )
 ```
 
-### Parameters
+### Physical Principle: Secondary Flows (Fully Documented)
 
-- `bend_radius` (float): Radius of curvature in meters (default: 0.5)
-- `bend_factor` (float): Efficiency factor, 1.0 = no loss (default: 0.9)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
+**Loss Mechanisms (Documented in Docstrings):**
 
-### Examples
+1. **Secondary Flows:**
+   - Fluid follows curved path
+   - Centrifugal forces create transverse circulation
+   - Dean vortices form (documented in code comments)
 
-#### Basic Usage
-```python
-bend = Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1)
+2. **Flow Separation:**
+   - High-velocity fluid on outer wall
+   - Low-velocity region on inner wall
+   - Separation can occur at sharp bends
 
-output_flow = bend.processFlow(
-    input_flow=0.05,
-    input_mass=50,
-    interval=1
-)
+3. **Increased Turbulence:**
+   - Velocity gradients enhanced
+   - Energy dissipated to smaller eddies
 
-print(f"Input flow: 0.05 m³/s")
-print(f"Output flow: {output_flow:.4f} m³/s")
+**Power Loss Model (Documented):**
 ```
-
-#### Bend Sharpness Effect
-```python
-input_flow = 0.05
-input_mass = 50
-
-# Sharp bend (low efficiency)
-sharp_bend = Bend(bend_radius=0.2, bend_factor=0.70, diameter=0.1)
-output_sharp = sharp_bend.processFlow(
-    input_flow=input_flow, input_mass=input_mass, interval=1
-)
-
-# Gentle bend (high efficiency)
-gentle_bend = Bend(bend_radius=1.0, bend_factor=0.95, diameter=0.1)
-output_gentle = gentle_bend.processFlow(
-    input_flow=input_flow, input_mass=input_mass, interval=1
-)
-
-print(f"Sharp bend loss: {(input_flow - output_sharp) / input_flow:.1%}")
-print(f"Gentle bend loss: {(input_flow - output_gentle) / input_flow:.1%}")
-```
-
-#### Multiple Bends
-```python
-# Pipeline with 4 bends
-input_flow = 0.05
-input_mass = 50
-
-current_flow = input_flow
-current_mass = input_mass
-
-for i in range(4):
-    bend = Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1)
-    current_flow = bend.processFlow(
-        input_flow=current_flow,
-        input_mass=current_mass,
-        interval=1
-    )
-    # Mass is conserved
-    print(f"After bend {i+1}: flow = {current_flow:.4f} m³/s")
-
-total_loss = (input_flow - current_flow) / input_flow
-print(f"\nTotal loss through 4 bends: {total_loss:.1%}")
-```
-
-### Bend Factor Guidelines
-
-| Bend Type | Radius/Diameter | Bend Factor | Typical Loss |
-|-----------|-----------------|-------------|--------------|
-| Very sharp (90°) | R/D < 1 | 0.60-0.70 | 30-40% |
-| Sharp (90°) | R/D = 1-2 | 0.75-0.85 | 15-25% |
-| Standard (90°) | R/D = 3-5 | 0.85-0.90 | 10-15% |
-| Gentle (90°) | R/D > 5 | 0.90-0.95 | 5-10% |
-| Swept (45°) | Any | 0.95-0.98 | 2-5% |
-
----
-
-## Valve
-
-Models valves with adjustable resistance and associated power losses.
-
-**Power Loss Formula:**
-```
-P_loss = ṁ × K × v² / 2
+P_loss = (1 - efficiency) × (1/2) × m_dot × v²
 ```
 
 Where:
-- P_loss = Power consumed through valve (Watts)
-- ṁ = Mass flow rate (kg/s)
-- K = Resistance coefficient (dimensionless)
-- v = Flow velocity (m/s)
+- `efficiency` = `bend_factor` (0 to 1)
+- `1 - efficiency` = fraction of kinetic energy lost
 
-### Initialization
+### Method: `bendPowerFunction()`
+
+**Complete Documentation:**
+
+```python
+def bendPowerFunction(self, **kwargs):
+    """
+    Calculate power consumed in the bend due to flow direction change.
+    
+    Loss is proportional to the kinetic energy and the inefficiency of the bend.
+    Power loss = (1 - efficiency) × (1/2) × m_dot × v²
+    
+    Args:
+        input_volumetric_flow (float, optional): Volumetric flow rate in m³/s. Default: 0
+        input_mass_flow (float, optional): Mass flow rate in kg/s. Default: 0
+    
+    Returns:
+        float: Power consumed due to bend losses in Watts.
+    """
+```
+
+**Inline Comments Explain:**
+```python
+# Calculate flow velocity
+velocity = volumetric_flow / cross_sectional_area  # m/s
+
+# Power loss based on kinetic energy and bend inefficiency
+# Formula: P = (1 - η) × (1/2) × m_dot × v²
+# Where η is the bend_factor (efficiency)
+return mass_flow * (1 - self.bend_factor) * (velocity ** 2) / 2  # W
+```
+
+### Bend Factor Guide (Documented)
+
+**Typical Values (Commented in Code):**
+- Smooth, gradual bends (R/D > 5): `bend_factor ≈ 0.95 - 0.98`
+- Standard 90° elbows (R/D ≈ 2): `bend_factor ≈ 0.85 - 0.90`
+- Sharp bends (R/D < 1): `bend_factor ≈ 0.70 - 0.80`
+
+Where `R/D` is radius-to-diameter ratio
+
+---
+
+## Valve Connector
+
+### Class: `Valve`
+
+**Enhanced Documentation (v0.6.1):** Resistance mechanism explained.
 
 ```python
 from systems.connectors import Valve
 
+# Initialize with documented parameters
 valve = Valve(
-    resistance_coefficient=1.0,  # dimensionless
-    diameter=0.1                 # meters
+    resistance_coefficient=1.0,  # float: Flow resistance K (dimensionless)
+    diameter=0.1,                # float: Inner diameter in meters
+    cost=200.0                   # float: Valve cost in USD
 )
 ```
 
-### Parameters
+### Physical Principle: Flow Resistance (Fully Documented)
 
-- `resistance_coefficient` (float): Flow resistance (default: 1.0)
-- `diameter` (float): Inner diameter in meters (default: 0.1)
+**Resistance Mechanism (Documented in Docstrings):**
 
-### Examples
+Valves control flow by introducing resistance through:
+1. **Partial obstruction** of flow path
+2. **Flow contraction** through valve opening
+3. **Expansion** after valve exit
+4. **Turbulence generation** in wake regions
 
-#### Basic Usage
-```python
-valve = Valve(resistance_coefficient=1.5, diameter=0.1)
-
-output_flow = valve.processFlow(
-    input_flow=0.05,
-    input_mass=50,
-    interval=1
-)
-
-print(f"Flow reduction: {(0.05 - output_flow) / 0.05:.1%}")
+**Power Loss Model (Documented):**
+```
+P_loss = K × (1/2) × m_dot × v²
 ```
 
-#### Valve Opening Simulation
-```python
-# Simulate different valve positions
-input_flow = 0.05
-input_mass = 50
+Where:
+- `K` = `resistance_coefficient` (dimensionless)
+- Higher `K` = more resistance = more power loss
 
-positions = {
-    "Fully open": 0.5,
-    "75% open": 1.0,
-    "50% open": 2.5,
-    "25% open": 8.0,
-    "Nearly closed": 20.0
-}
+### Method: `valvePowerFunction()`
 
-for position, resistance in positions.items():
-    valve = Valve(resistance_coefficient=resistance, diameter=0.1)
-    output = valve.processFlow(
-        input_flow=input_flow,
-        input_mass=input_mass,
-        interval=1
-    )
-    reduction = (input_flow - output) / input_flow
-    print(f"{position:15s}: {reduction:5.1%} flow reduction")
-```
-
-#### Flow Control System
-```python
-import numpy as np
-
-def adjust_valve_to_target_flow(target_flow, input_flow, input_mass):
-    """Find valve resistance to achieve target flow"""
-    for resistance in np.linspace(0.1, 10, 100):
-        valve = Valve(resistance_coefficient=resistance, diameter=0.1)
-        output = valve.processFlow(
-            input_flow=input_flow,
-            input_mass=input_mass,
-            interval=1
-        )
-        if abs(output - target_flow) < 0.001:
-            return resistance, output
-    return None, None
-
-target = 0.03  # Want 0.03 m³/s output
-resistance, actual = adjust_valve_to_target_flow(
-    target, 
-    input_flow=0.05, 
-    input_mass=50
-)
-
-print(f"Target flow: {target} m³/s")
-print(f"Required resistance: {resistance:.2f}")
-print(f"Actual output: {actual:.4f} m³/s")
-```
-
-### Resistance Coefficient Guidelines
-
-| Valve Type | Position | Resistance Coefficient |
-|-----------|----------|----------------------|
-| Gate valve | Fully open | 0.1-0.2 |
-| Gate valve | 75% open | 0.5-1.0 |
-| Gate valve | 50% open | 2.0-4.0 |
-| Globe valve | Fully open | 4.0-10.0 |
-| Ball valve | Fully open | 0.05-0.1 |
-| Butterfly valve | Fully open | 0.2-0.5 |
-| Check valve | Open | 2.0-4.0 |
-
----
-
-## Combined Systems
-
-### Complete Pipeline Example
+**Complete Documentation:**
 
 ```python
-from systems.connectors import Pipe, Bend, Valve
-
-# Define pipeline components
-components = [
-    Pipe(length=5, diameter=0.1, friction_factor=0.02),
-    Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1),
-    Pipe(length=10, diameter=0.1, friction_factor=0.02),
-    Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1),
-    Valve(resistance_coefficient=1.5, diameter=0.1),
-    Pipe(length=5, diameter=0.1, friction_factor=0.02)
-]
-
-# Initial conditions
-current_flow = 0.1  # m³/s
-current_mass = 100  # kg/s
-
-print("=== Pipeline Flow Analysis ===\n")
-print(f"Initial flow: {current_flow:.4f} m³/s")
-
-# Process through each component
-for i, component in enumerate(components):
-    component_type = type(component).__name__
-    
-    output_flow = component.processFlow(
-        input_flow=current_flow,
-        input_mass=current_mass,
-        interval=1
-    )
-    
-    loss = (current_flow - output_flow) / current_flow
-    print(f"{i+1}. {component_type:10s}: "
-          f"flow = {output_flow:.4f} m³/s, "
-          f"loss = {loss:.2%}")
-    
-    current_flow = output_flow
-
-total_loss = (0.1 - current_flow) / 0.1
-print(f"\nTotal pipeline loss: {total_loss:.1%}")
-print(f"Final flow: {current_flow:.4f} m³/s")
-```
-
-### Optimization Example
-
-```python
-import numpy as np
-
-def optimize_pipeline(target_flow, initial_flow, initial_mass):
-    """Find optimal pipe diameter to achieve target flow"""
-    best_diameter = None
-    best_output = None
-    
-    for diameter in np.linspace(0.05, 0.3, 50):
-        # Test pipeline with this diameter
-        pipeline = [
-            Pipe(length=20, diameter=diameter, friction_factor=0.02),
-            Bend(bend_radius=diameter*5, bend_factor=0.9, diameter=diameter),
-            Pipe(length=10, diameter=diameter, friction_factor=0.02)
-        ]
-        
-        current_flow = initial_flow
-        current_mass = initial_mass
-        
-        for component in pipeline:
-            current_flow = component.processFlow(
-                input_flow=current_flow,
-                input_mass=current_mass,
-                interval=1
-            )
-        
-        if best_output is None or abs(current_flow - target_flow) < abs(best_output - target_flow):
-            best_diameter = diameter
-            best_output = current_flow
-    
-    return best_diameter, best_output
-
-optimal_d, output = optimize_pipeline(
-    target_flow=0.08,
-    initial_flow=0.1,
-    initial_mass=100
-)
-
-print(f"Optimal diameter: {optimal_d:.3f} m")
-print(f"Achieved flow: {output:.4f} m³/s")
-```
-
----
-
-## Integration with Process Systems
-
-### Connecting Processes with Pipes
-
-```python
-from systems.processes import Fermentation, Filtration
-from systems.connectors import Pipe
-
-# Create process systems
-fermenter = Fermentation(efficiency=0.95)
-filter_sys = Filtration(efficiency=0.98)
-
-# Create transport pipe
-transfer_pipe = Pipe(length=15, diameter=0.2, friction_factor=0.02)
-
-# Initial inputs
-inputs = {"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10}
-
-# Process through fermenter
-fermentation_output = fermenter.processMass(
-    inputs=inputs,
-    input_type="amount",
-    output_type="full"
-)
-
-print("After fermentation:")
-print(f"  Ethanol: {fermentation_output['amount']['ethanol']:.2f} kg")
-
-# Convert to flow rate (assume 1 hour transfer time = 3600s)
-transfer_time = 3600  # seconds
-flow_inputs = {
-    comp: fermentation_output['amount'][comp] / transfer_time 
-    for comp in fermenter.components
-}
-
-# Calculate mass flow rate
-total_mass_flow = sum(fermentation_output['amount'].values()) / transfer_time
-
-# Transport through pipe
-output_flow = transfer_pipe.processFlow(
-    input_flow=sum(flow_inputs.values()),
-    input_mass=total_mass_flow,
-    interval=1
-)
-
-# Scale back to total amounts after transfer
-flow_ratio = output_flow / sum(flow_inputs.values())
-filtration_inputs = {
-    comp: fermentation_output['amount'][comp] * flow_ratio
-    for comp in fermenter.components
-}
-
-# Process through filtration
-final_output = filter_sys.processMass(
-    inputs=filtration_inputs,
-    input_type="amount",
-    output_type="full"
-)
-
-print("\nAfter transport and filtration:")
-print(f"  Ethanol: {final_output['amount']['ethanol']:.2f} kg")
-print(f"  Transport losses: {(1 - flow_ratio) * 100:.1f}%")
-```
-
----
-
-## Best Practices
-
-1. **Mass Conservation**: Mass flow rate remains constant through connectors
-2. **Sequential Processing**: Chain connectors by using output of one as input to next
-3. **Realistic Parameters**: Use typical values for friction factors and resistances
-4. **Energy Losses**: Remember that flow rate decreases due to energy dissipation
-5. **Diameter Selection**: Larger diameters = less friction but higher material cost
-6. **Interval Consistency**: Use consistent time intervals when chaining connectors
-7. **Zero Flow Handling**: Methods return 0 when input flow or mass is zero
-
----
-
-## Common Applications
-
-### Pressure Drop Calculation
-
-```python
-def calculate_pressure_drop(components, flow_rate, density=1000):
-    """Calculate total pressure drop through system"""
-    total_energy_loss = 0
-    current_flow = flow_rate
-    mass_flow = flow_rate * density
-    
-    for component in components:
-        # Energy loss for this component
-        energy_loss = component.energyConsumed(
-            input_flow=current_flow,
-            input_mass=mass_flow
-        )
-        total_energy_loss += energy_loss
-        
-        # Update flow for next component
-        current_flow = component.processFlow(
-            input_flow=current_flow,
-            input_mass=mass_flow,
-            interval=1
-        )
-    
-    # Convert energy loss to pressure drop
-    # ΔP = ΔE / Volume = ΔE * density / mass
-    pressure_drop = total_energy_loss * density / (mass_flow if mass_flow > 0 else 1)
-    
-    return pressure drop, current_flow
-
-# Example usage
-pipeline = [
-    Pipe(length=20, diameter=0.1, friction_factor=0.02),
-    Bend(bend_radius=0.5, bend_factor=0.9, diameter=0.1),
-    Valve(resistance_coefficient=2.0, diameter=0.1)
-]
-
-pressure_drop, final_flow = calculate_pressure_drop(
-    pipeline,
-    flow_rate=0.05,
-    density=1000
-)
-
-print(f"Total pressure drop: {pressure_drop:.2f} Pa")
-print(f"Final flow rate: {final_flow:.4f} m³/s")
-```
-
-### System Sizing
-
-```python
-def size_system_for_capacity(target_capacity, max_pressure_drop):
+def valvePowerFunction(self, **kwargs):
     """
-    Determine pipe diameter needed for target capacity
+    Calculate power consumed through the valve due to flow resistance.
+    
+    Loss is based on the kinetic energy and resistance coefficient:
+    Power loss = K × (1/2) × m_dot × v²
+    where K is the resistance coefficient.
     
     Args:
-        target_capacity: Required flow rate (m³/s)
-        max_pressure_drop: Maximum allowable pressure drop (Pa)
+        input_volumetric_flow (float, optional): Volumetric flow rate in m³/s. Default: 0
+        input_mass_flow (float, optional): Mass flow rate in kg/s. Default: 0
     
     Returns:
-        Recommended diameter (m)
+        float: Power consumed due to valve resistance in Watts.
     """
-    density = 1000  # kg/m³
-    length = 50  # Total pipeline length
-    friction_factor = 0.02
-    
-    for diameter in np.linspace(0.05, 0.5, 100):
-        pipe = Pipe(
-            length=length,
-            diameter=diameter,
-            friction_factor=friction_factor
-        )
-        
-        output_flow = pipe.processFlow(
-            input_flow=target_capacity,
-            input_mass=target_capacity * density,
-            interval=1
-        )
-        
-        # Calculate pressure drop
-        energy_loss = pipe.energyConsumed(
-            input_flow=target_capacity,
-            input_mass=target_capacity * density
-        )
-        pressure_drop = energy_loss * density / (target_capacity * density)
-        
-        if pressure_drop <= max_pressure_drop:
-            return diameter
-    
-    return None  # No suitable diameter found
+```
 
-# Example
-recommended_diameter = size_system_for_capacity(
-    target_capacity=0.1,  # 0.1 m³/s
-    max_pressure_drop=50000  # 50 kPa
-)
+**Inline Comments Explain:**
+```python
+# Calculate flow velocity
+velocity = volumetric_flow / cross_sectional_area  # m/s
 
-if recommended_diameter:
-    print(f"Recommended diameter: {recommended_diameter:.3f} m")
-else:
-    print("No suitable diameter found within constraints")
+# Power loss based on resistance coefficient and kinetic energy
+# Formula: P = K × (1/2) × m_dot × v²
+# Similar to pressure drop: ΔP = K × (1/2) × ρ × v²
+return mass_flow * (velocity ** 2) * self.resistance_coefficient / 2  # W
+```
+
+### Resistance Coefficient Guide (Documented)
+
+**Typical Values (Commented in Code):**
+- Fully open gate valve: `K ≈ 0.15 - 0.20`
+- Fully open globe valve: `K ≈ 5.0 - 10.0`
+- Partially open valves: `K` increases significantly
+- Flow control applications: Adjust `K` to achieve desired restriction
+
+**Relationship to Valve Position:**
+```python
+# Documented in code comments:
+# K increases as valve closes
+# Typical relationship: K = K_min × (1 - position)^n
+# Where position = 0 (closed) to 1 (open), n ≈ 2-4
 ```
 
 ---
 
-## Troubleshooting
+## Combining Connectors (Enhanced Examples)
 
-### Common Issues
+### Series Connection (Documented)
 
-**Issue: Output flow is zero**
-- Check that `input_flow` and `input_mass` are non-zero
-- Verify that energy loss isn't exceeding input energy
-- Consider increasing diameter or reducing length
+```python
+# Series connection: output of one feeds input of next
+# Total power loss = sum of individual losses (documented in code)
 
-**Issue: Unrealistic energy losses**
-- Check friction factor values (should be 0.01-0.10)
-- Verify bend_factor is between 0 and 1
-- Ensure resistance coefficients are reasonable
+# Pipe power loss
+pipe_loss = pipe.powerConsumed(
+    input_volumetric_flow=Q1,
+    input_mass_flow=m1
+)  # W
 
-**Issue: Mass flow seems to change**
-- Mass is conserved through connectors
-- Only volumetric flow rate changes due to energy loss
-- Density remains constant in each connector
+# Pipe output flow
+Q2 = pipe.processFlow(
+    input_volumetric_flow=Q1,
+    input_mass_flow=m1
+)  # m³/s
+
+# Mass conserved (documented principle)
+m2 = m1  # kg/s
+
+# Bend power loss
+bend_loss = bend.powerConsumed(
+    input_volumetric_flow=Q2,
+    input_mass_flow=m2
+)  # W
+
+# Bend output flow
+Q3 = bend.processFlow(
+    input_volumetric_flow=Q2,
+    input_mass_flow=m2
+)  # m³/s
+
+# Total power loss (documented calculation)
+total_loss = pipe_loss + bend_loss  # W
+```
 
 ---
 
-## Next Steps
+## Engineering Applications (Enhanced Documentation)
 
-- **[Process Systems](process-systems.md)**: Learn about chemical processing
-- **[Examples](examples.md)**: See complete system integrations
-- **[API Reference](api-reference.md)**: Detailed method documentation
+### Pressure Drop Calculations (Documented)
+
+```python
+# Calculate pressure drop from power loss (documented relationship)
+# ΔP = P_loss / Q
+# Units: Pa = W / (m³/s)
+
+power_loss = pipe.powerConsumed(
+    input_volumetric_flow=flow_rate,
+    input_mass_flow=mass_rate
+)  # W
+
+pressure_drop = power_loss / flow_rate  # Pa
+
+# Convert to other units (documented conversions)
+pressure_drop_psi = pressure_drop * 0.000145038  # psi = Pa × 0.000145038
+pressure_drop_bar = pressure_drop * 1e-5  # bar = Pa × 10^-5
+```
+
+### Reynolds Number Estimation (Documented)
+
+```python
+# Reynolds number determines flow regime (documented in comments)
+# Re = ρvD/μ = 4m_dot/(πDμ)
+
+# For water at 20°C
+density = 997  # kg/m³ (documented value)
+viscosity = 0.001  # Pa·s = kg/(m·s) (documented value)
+diameter = 0.1  # m
+
+# Calculate Reynolds number (formula documented)
+Re = (4 * mass_flow) / (π * diameter * viscosity)
+
+# Flow regime classification (documented thresholds)
+if Re < 2300:
+    regime = "Laminar"  # Smooth, layered flow
+elif Re < 4000:
+    regime = "Transitional"  # Mixed behavior
+else:
+    regime = "Turbulent"  # Chaotic, well-mixed flow
+```
+
+---
+
+## Best Practices (Enhanced for v0.6.1)
+
+### Understanding Physical Principles
+
+1. **Read docstrings for physics:**
+   ```python
+   help(Pipe.pipePowerFunction)
+   # Shows complete Darcy-Weisbach documentation
+   ```
+
+2. **Check inline comments for formulas:**
+   - Source code includes step-by-step derivations
+   - Variable meanings documented
+   - Unit conversions explained
+
+3. **Verify parameter units:**
+   - All parameters documented with SI units
+   - Conversion factors provided where needed
+
+### Debugging Flow Calculations
+
+With enhanced documentation:
+
+```python
+# Enable detailed inspection (documented approach)
+input_Q = 0.01  # m³/s (documented)
+input_m = 10.0  # kg/s (documented)
+
+# Step 1: Check input power (documented calculation)
+velocity = input_Q / pipe.cross_sectional_area
+input_power = input_m * (velocity ** 2) / 2
+print(f"Input power: {input_power} W")  # Documented unit
+
+# Step 2: Check power loss (documented mechanism)
+loss = pipe.powerConsumed(
+    input_volumetric_flow=input_Q,
+    input_mass_flow=input_m
+)
+print(f"Power loss: {loss} W")  # Darcy-Weisbach loss
+
+# Step 3: Check output power (documented calculation)
+output_power = input_power - loss
+print(f"Output power: {output_power} W")
+
+# Step 4: Calculate output flow (documented formula)
+output_Q = pipe.processFlow(
+    input_volumetric_flow=input_Q,
+    input_mass_flow=input_m
+)
+print(f"Output flow: {output_Q} m³/s")
+```
+
+---
+
+## Related Documentation
+
+- **[Process Systems](process-systems.md)** - Process unit documentation (also enhanced in v0.6.1)
+- **[API Reference](api-reference.md)** - Complete API with enhanced docstrings
+- **[Examples](examples.md)** - Practical examples with improved explanations
+
+---
+
+*For complete API details with comprehensive docstrings and physics documentation, see [API Reference](api-reference.md)*
+
+*Last updated: Version 0.6.1 - November 2025*

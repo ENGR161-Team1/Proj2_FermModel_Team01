@@ -5,6 +5,47 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2025-11-09
+
+### Improved
+- **Comprehensive documentation enhancements:**
+  - Added detailed docstrings for all Process class methods with complete parameter descriptions
+  - Enhanced Connector class documentation with clear explanations of power loss mechanisms
+  - Improved method documentation across all classes with:
+    - Type hints and units for all parameters
+    - Detailed descriptions of return values
+    - Documentation of exceptions and error conditions
+    - Clear explanations of method functionality and use cases
+  - Added extensive inline comments explaining:
+    - Conversion calculations between mass and volumetric flow rates
+    - Energy and power consumption tracking mechanisms
+    - Cost calculation methods
+    - Logging structures and data storage patterns
+  - Enhanced code readability with better variable naming and calculation explanations
+  - Documented physical principles behind connector power loss calculations (Darcy-Weisbach, bend losses, valve resistance)
+
+## [0.6.0] - 2025-11-09
+
+### Added
+- **Cost tracking system:**
+  - Added `cost_per_flow` parameter to track cost per unit volumetric flow rate ($/m³/s)
+  - New `cost_per_unit_flow` and `cost_incurred` fields in `consumption_log` for tracking costs
+  - Cost calculations in both `processMassFlow()` and `processVolumetricFlow()` methods
+  - Optional `store_cost` parameter to enable/disable cost logging
+
+### Changed
+- **Refactored consumption tracking:**
+  - Renamed `power_log` → `consumption_log` to encompass power, energy, and cost tracking
+  - Enhanced `consumption_log` dictionary with integrated cost tracking alongside power/energy data
+  - Unified tracking structure for all consumption-related metrics (power, energy, cost)
+
+### Improved
+- **Enhanced project metadata:**
+  - Updated project description with comprehensive feature list
+  - Added keywords for better project discoverability
+  - Added additional project URLs (Repository, Documentation, Changelog, Issues)
+  - Updated license field in pyproject.toml
+
 ## [0.5.3] - 2025-11-09
 
 ### Added
@@ -114,7 +155,60 @@ processor.iterateMassFlowInputs(inputValues=batch_data)
 ### Added
 - Comprehensive error handling and input validation
 
-## [0.3.x and earlier]
+## [0.3.5] - 2025-11-07
+
+### Changed
+- **Refactored Connector class architecture:**
+  - Removed `mass_function` parameter - mass is now always conserved (no mass loss in connectors)
+  - Renamed `energy_function` → `energy_consumed` to better reflect consumption calculation
+  - Streamlined initialization to focus on energy consumption modeling
+
+### Added
+- **New `processFlow()` method in Connector class:**
+  - Calculates output volumetric flow rate after energy losses
+  - Uses energy balance to determine flow reduction due to friction/resistance
+  - Implements cube root calculation for accurate flow rate determination from energy
+
+### Removed
+- **Removed redundant mass functions from all connector classes:**
+  - Removed `pipeMassFunction()` - mass conservation is implicit
+  - Removed `bendMassFunction()` - mass conservation is implicit
+  - Removed `valveMassFunction()` - mass conservation is implicit
+
+### Improved
+- **Enhanced energy calculation methods:**
+  - `pipeEnergyFunction()` now returns energy consumed (not remaining energy)
+  - `bendEnergyFunction()` now returns energy consumed (not remaining energy)
+  - `valveEnergyFunction()` now returns energy consumed (not remaining energy)
+  - Cleaner separation of concerns between energy dissipation and flow calculation
+
+## [0.3.0] - 2025-11-07
+
+### Added
+- **Complete connector system implementation:**
+  - Implemented `Bend` class with energy loss calculations for flow direction changes
+  - Implemented `Valve` class with resistance-based energy loss modeling
+  - Added `pipeMassFunction()`, `bendMassFunction()`, and `valveMassFunction()` to all connector classes
+  - Added cross-sectional area calculations for all connectors based on diameter
+
+### Improved
+- **Enhanced connector documentation:**
+  - Added comprehensive docstrings for all Connector, Pipe, Bend, and Valve classes
+  - Documented all methods with detailed parameter descriptions and return types
+  - Added clear explanations of physical principles (Darcy-Weisbach equation, bend losses, valve resistance)
+  - Included unit specifications for all flow rates and energy calculations
+
+### Changed
+- **Refined energy loss calculations:**
+  - Updated Pipe energy loss to properly include length parameter in Darcy-Weisbach equation
+  - Improved Bend energy loss calculation using kinetic energy and bend efficiency factor
+  - Added Valve energy loss calculation based on resistance coefficient and dynamic pressure
+  - Standardized flow rate units to m³/s and kg/s across all connector classes
+
+### Fixed
+- Fixed `components` initialization in System class (changed from `self.components = self.components` to proper list initialization)
+
+## [0.2.x and earlier]
 
 Earlier versions focused on initial development of the ethanol plant model with basic process systems and connector implementations.
 

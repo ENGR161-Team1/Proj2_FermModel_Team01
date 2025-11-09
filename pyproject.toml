@@ -1,15 +1,25 @@
 [project]
 name = "EthanolPlantModel"
-version = "0.5.3"
+version = "0.6.1"
 authors = [
     { name = "Advay  Ramesh Chandra", email = "chand289@purdue.edu" },
     { name = "Karley Jo Hammond", email = "hammon88@purdue.edu" },
     { name = "Samuel Miles Razor", email = "razor@purdue.edu" },
     { name = "Kathering Elizabeth Hampton", email = "hampto64@purdue.edu" }
 ]
-description = "A model for an ethanol plant"
+description = "A complete simulation model for ethanol production plants featuring mass balance calculations, process efficiency modeling, fluid transport dynamics, and power consumption tracking across fermentation, filtration, distillation, and dehydration systems."
 readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = [
+    "ethanol",
+    "simulation",
+    "chemical-engineering",
+    "mass-balance",
+    "process-modeling",
+    "fermentation",
+    "distillation"
+]
 dependencies = [
     "numpy",
     "matplotlib",
@@ -18,3 +28,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/ENGR161-Team1/EthanolPlantModel"
+Repository = "https://github.com/ENGR161-Team1/EthanolPlantModel"
+Documentation = "https://github.com/ENGR161-Team1/EthanolPlantModel/tree/main/docs"
+Changelog = "https://github.com/ENGR161-Team1/EthanolPlantModel/blob/main/CHANGELOG.md"
+Issues = "https://github.com/ENGR161-Team1/EthanolPlantModel/issues"

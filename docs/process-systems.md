@@ -1,10 +1,22 @@
 # Process Systems
 
-Detailed guide to the chemical process systems in the Ethanol Plant Model (v0.4.0).
+**Version:** 0.6.1
+
+This document provides detailed information about the process systems in the Ethanol Plant Model.
+
+## 🆕 Enhanced Documentation (v0.6.1)
+
+All process methods now include:
+- **Detailed parameter documentation** with types, units, and defaults
+- **Comprehensive return value descriptions** explaining output formats
+- **Physical principles** documented in docstrings and inline comments
+- **Exception documentation** for error handling
+
+Check the source code for extensive inline comments explaining each calculation!
 
 ## Overview
 
-The model includes four main process systems:
+The ethanol plant model includes four main process systems that transform raw materials into high-purity ethanol:
 1. **Fermentation** - Sugar to ethanol conversion
 2. **Filtration** - Fiber removal
 3. **Distillation** - Ethanol separation
@@ -17,6 +29,42 @@ All systems inherit from the `System` base class and support flexible input/outp
 ## Architecture
 
 All process systems inherit from the base `Process` class, which provides:
+
+### Core Functionality (Enhanced in v0.6.1)
+
+1. **Flow Processing** - Now with comprehensive docstrings
+   - `processMassFlow()` - Process mass flow rates (kg/s)
+   - `processVolumetricFlow()` - Process volumetric flow rates (m³/s)
+   - Detailed parameter documentation including types and units
+
+2. **Flow Conversion** - With clear conversion formulas
+   - `volumetricToMass()` - Convert m³/s to kg/s using density
+   - `massToVolumetric()` - Convert kg/s to m³/s using density
+   - Inline comments explain: mass_flow = volumetric_flow × density
+
+3. **Resource Tracking** - Enhanced logging documentation
+   - `processPowerConsumption()` - Calculate energy from power and time
+   - Power in Watts (W), Energy in Joules (J)
+   - Formula documented: Energy = Power × Time
+
+4. **Batch Processing** - Improved iteration explanations
+   - `iterateMassFlowInputs()` - Process time-series mass data
+   - `iterateVolumetricFlowInputs()` - Process time-series volumetric data
+   - Clear documentation of input/output formats
+
+### Input/Output Formats (Clearly Documented in v0.6.1)
+
+All process methods support three flexible formats, now with detailed docstring examples:
+
+- **Amount**: Specify exact mass of each component (e.g., kg)
+- **Composition**: Specify fractions or percentages of each component
+- **Full**: Return both mass and composition of outputs
+
+---
+
+## Base Process Class
+
+All process systems inherit from the `Process` base class, which provides:
 
 - **Modularity**: Each process is a separate class, allowing for independent development and testing.
 - **Flexibility**: Easy to add new processes or modify existing ones.
@@ -52,6 +100,19 @@ from systems.process import Process
 - `efficiency`: Fraction representing the efficiency of the process (0.0 to 1.0).
 - `input_units`: Expected units for mass inputs (e.g., "amount", "composition").
 - `output_units`: Units for the processed outputs.
+
+---
+
+## Common Features
+
+All process systems inherit from the base `Process` class and support:
+
+1. **Mass Flow Processing** - Convert and process mass flow rates
+2. **Volumetric Flow Processing** - Handle volumetric flow rates
+3. **Power Consumption Tracking** - Monitor power usage and energy consumption
+4. **Cost Tracking** - Track operational costs based on flow rates
+5. **Batch Processing** - Process multiple input sets iteratively
+6. **Flexible I/O** - Support amount, composition, or full output formats
 
 ---
 
@@ -96,15 +157,23 @@ from systems.processors import Fermentation
 
 fermenter = Fermentation(efficiency=0.95)
 
-result = fermenter.processMass(
-    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
-    input_type="amount",
-    output_type="full"
+# Process with detailed parameter documentation
+result = fermenter.processMassFlow(
+    inputs={
+        "ethanol": 0,      # float: Initial ethanol in kg/s
+        "water": 100,      # float: Water content in kg/s
+        "sugar": 50,       # float: Sugar to ferment in kg/s
+        "fiber": 10        # float: Fiber (inert) in kg/s
+    },
+    input_type="amount",   # str: Input format type
+    output_type="full",    # str: Return both amounts and compositions
+    store_outputs=True     # bool: Log results for analysis
 )
 
-print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
-print(f"Sugar consumed: {50 - result['amount']['sugar']:.2f} kg")
-print(f"Conversion efficiency: {result['amount']['ethanol'] / (50 * 0.51):.1%}")
+# Access results with documented structure
+print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg/s")
+print(f"Sugar remaining: {result['amount']['sugar']:.2f} kg/s")
+print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 ```
 
 #### Composition Mode
@@ -595,6 +664,53 @@ print(f"Filtration: {energy2/3_600_000:.2f} kWh")
 print(f"Distillation: {energy3/3_600_000:.2f} kWh")
 ```
 
+---
+
+## Cost Tracking
+
+All processors support cost tracking based on volumetric flow rates:
+
+```python
+from systems.processors import Fermentation
+
+# Create fermenter with power and cost parameters
+fermenter = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=100,  # kWh/day
+    power_consumption_unit="kWh/day",
+    cost_per_flow=50.0                   # float: Cost in $/(m³/s)
+)
+
+# Process with cost tracking enabled
+result = fermenter.processMassFlow(
+    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
+    input_type="amount",
+    output_type="full",
+    store_outputs=True,
+    store_cost=True  # Enable cost logging
+)
+
+# Access consumption logs
+print(f"Costs incurred: {fermenter.consumption_log['cost_incurred']}")
+print(f"Total cost: ${sum(fermenter.consumption_log['cost_incurred']):.2f}")
+```
+
+### Consumption Log Structure
+
+The `consumption_log` attribute tracks multiple consumption metrics:
+
+```python
+{
+    "power_consumption_rate": [100.0, 100.0, ...],  # Power at each step (W)
+    "energy_consumed": [360000.0, 360000.0, ...],   # Energy per interval (J)
+    "interval": [3600, 3600, ...],                  # Time intervals (s)
+    "cost_per_unit_flow": [50.0, 50.0, ...],        # Cost rate ($/m³/s)
+    "cost_incurred": [5.25, 5.25, ...]              # Actual cost ($)
+}
+```
+
+---
+
 ## Process Efficiency
 
 | Process | Parameter | Typical Range | Impact on Yield |
@@ -606,3 +722,17 @@ print(f"Distillation: {energy3/3_600_000:.2f} kWh")
 
 - Monitor and adjust parameters for optimal performance.
 - Consider trade-offs between yield, purity, and energy consumption.
+
+---
+
+## Related Documentation
+
+- **[API Reference](api-reference.md)** - Complete method documentation with enhanced docstrings
+- **[Connector Systems](connector-systems.md)** - Fluid transport documentation (also enhanced in v0.6.1)
+- **[Examples](examples.md)** - Practical examples with improved explanations
+
+---
+
+*For complete API details with comprehensive docstrings, see [API Reference](api-reference.md)*
+
+*Last updated: Version 0.6.1 - November 2025*

@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.5.3
+**Version:** 0.6.1
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -45,6 +45,7 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 - ✅ Mass flow rate and volumetric flow rate balance calculations
 - ✅ Power consumption tracking with configurable rates and units
 - ✅ Energy consumption tracking for all processes with detailed logging
+- ✅ Cost tracking for process economics with configurable rates
 - ✅ Energy loss modeling for fluid transport (Darcy-Weisbach, bend losses)
 - ✅ Configurable efficiency parameters for all process units
 - ✅ Flexible input/output formats (amount, composition, or full)
@@ -132,15 +133,21 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.5.3)
+## Recent Updates (v0.6.1)
 
-### Power Consumption Tracking
-- **Implemented comprehensive power consumption tracking system:**
-  - Added structured `power_log` dictionary for tracking power consumption rate (W), energy consumed (J), and time intervals (s)
-  - New `processPowerConsumption()` method for calculating energy consumption based on power rate
-  - Renamed energy-related parameters to power-based terminology for improved accuracy
-  - All processor classes now support power consumption configuration during initialization
-  - Enhanced documentation with detailed parameter descriptions and output explanations
+### Documentation Enhancements
+- **Comprehensive documentation improvements:**
+  - Added detailed docstrings for all Process and Connector class methods
+  - Enhanced parameter descriptions with types, units, and default values
+  - Improved method documentation with clear descriptions of functionality
+  - Added return value documentation with types and explanations
+  - Documented error conditions and exceptions raised by methods
+  - Enhanced code comments explaining conversion calculations and logging behavior
+- **Improved code clarity:**
+  - Added inline comments for complex calculations and conversions
+  - Better explanation of mass/volumetric flow conversions
+  - Clear documentation of energy and cost tracking mechanisms
+  - Enhanced understanding of connector power loss calculations
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 
