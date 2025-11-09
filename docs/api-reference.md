@@ -6,6 +6,8 @@ Complete API documentation for all classes and methods in the Ethanol Plant Mode
 - [Process Class](#process-class)
 - [Processor Classes](#processor-classes)
 - [Connector Classes](#connector-classes)
+- [Pump Class](#pump-class)
+- [Facility Class](#facility-class)
 
 ---
 
@@ -362,6 +364,111 @@ valve = Valve(
     resistance_coefficient=0.5,
     power_consumption_rate=1
 )
+```
+
+---
+
+## Pump Class
+
+### `Pump(**kwargs)`
+
+Models a pump for increasing fluid pressure and velocity.
+
+**Parameters:**
+- `name` (str): Pump identifier. Default: "Pump"
+- `performance_rating` (float): Pump head rating in meters. Default: 0
+- `cost` (float): Cost in USD per m³/s of flow rate. Default: 0
+- `efficiency` (float): Pump efficiency as fraction (0-1). Default: 1.0
+- `opening_diameter` (float): Inlet/outlet diameter in meters. Default: 0.1
+
+### `pump_process(**kwargs)`
+
+Calculates output flow rates and power consumption based on pump efficiency.
+
+**Parameters:**
+- `input_volume_flow` (float): Inlet volumetric flow rate in m³/s
+- `input_composition` (dict): Component volume fractions with keys: "ethanol", "water", "sugar", "fiber"
+
+**Returns:**
+- `tuple`: (output_mass_flow, output_volumetric_flow, power_consumed)
+  - `output_mass_flow` (float): Mass flow rate at outlet in kg/s
+  - `output_volumetric_flow` (float): Volumetric flow rate at outlet in m³/s
+  - `power_consumed` (float): Mechanical power consumed in Watts
+
+**Example:**
+```python
+from systems.pump import Pump
+
+pump = Pump(efficiency=0.85, opening_diameter=0.15)
+mass_flow, vol_flow, power = pump.pump_process(
+    input_volume_flow=0.001,
+    input_composition={"water": 0.7, "ethanol": 0.2, "sugar": 0.1}
+)
+```
+
+---
+
+## Facility Class
+
+### `Facility(**kwargs)`
+
+Orchestrates material flow through multiple processes and connectors with integrated power tracking.
+
+**Parameters:**
+- `components` (list): List of Process and Connector instances. Default: []
+- `pump` (Pump): Pump instance for the facility. Default: Pump()
+
+### `add_component(component)`
+
+Adds a process or connector to the facility.
+
+**Parameters:**
+- `component` (Process or Connector): Component to add
+
+**Example:**
+```python
+facility = Facility()
+facility.add_component(Fermentation(efficiency=0.95))
+facility.add_component(Pipe(length=10))
+```
+
+### `facility_process(**kwargs)`
+
+Processes material through all facility components sequentially.
+
+**Parameters:**
+- `store_data` (bool): Whether to log input/output data. Default: False
+- `input_volume_composition` (dict): Component volumetric fractions (0-1)
+- `input_volumetric_flow` (float): Total input volumetric flow rate in m³/s
+- `interval` (float): Time interval in seconds for energy calculations. Default: 1
+
+**Returns:**
+- `dict`: Facility output with keys:
+  - `"volumetric_flow"` (dict): Output volumetric flow data
+  - `"mass_flow"` (dict): Output mass flow data
+  - `"total_power_consumed"` (float): Total power consumed in Watts
+  - `"power_generated"` (float): Energy generated from ethanol in Joules
+  - `"net_power_gained"` (float): Net power gain (generated - consumed) in Joules
+
+**Example:**
+```python
+from systems.facility import Facility
+from systems.pump import Pump
+from systems.processors import Fermentation
+
+facility = Facility(
+    pump=Pump(efficiency=0.85),
+    components=[Fermentation(efficiency=0.95)]
+)
+
+result = facility.facility_process(
+    input_volume_composition={"water": 0.625, "sugar": 0.3125, "fiber": 0.0625},
+    input_volumetric_flow=0.001,
+    interval=1,
+    store_data=True
+)
+
+print(f"Net power: {result['net_power_gained']:.2f} J")
 ```
 
 ---

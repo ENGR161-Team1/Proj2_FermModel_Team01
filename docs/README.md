@@ -1,103 +1,139 @@
 # Ethanol Plant Model Documentation
 
-**Version:** 0.7.0
+Welcome to the Ethanol Plant Model documentation! This guide will help you understand and use the ethanol production simulation system.
 
-Welcome to the comprehensive documentation for the Ethanol Plant Model project. This documentation provides detailed information about installation, usage, API reference, and examples.
+## 📖 Table of Contents
 
-## 📋 Table of Contents
+### Getting Started
+- **[Installation & Setup](getting-started.md)** - Install the package and verify your setup
+- **[Quick Start Guide](getting-started.md#quick-start)** - Get running in minutes
+- **[Basic Concepts](getting-started.md#basic-concepts)** - Core concepts and terminology
 
-1. **[Getting Started](getting-started.md)** - Installation instructions and basic setup
-2. **[API Reference](api-reference.md)** - Complete API documentation for all classes and methods
-3. **[Process Systems](process-systems.md)** - Detailed guide to process units (Fermentation, Filtration, etc.)
-4. **[Connector Systems](connector-systems.md)** - Fluid transport components (Pipes, Bends, Valves)
-5. **[Examples](examples.md)** - Practical examples and tutorials
+### Core Documentation
+- **[API Reference](api-reference.md)** - Complete API documentation for all classes and methods
+- **[Process Systems](process-systems.md)** - Fermentation, Filtration, Distillation, and Dehydration
+- **[Connector Systems](connector-systems.md)** - Pipes, Bends, Valves, and fluid transport
+- **[Pump System](pump-system.md)** - Pump modeling and fluid dynamics
+- **[Facility System](facility-system.md)** - Integrated facility management and orchestration
 
-## 🆕 What's New in v0.7.0
-
-### Major Refactoring for Improved Design
-
-Version 0.7.0 focuses on architectural improvements and API enhancements:
-
-- **Static Methods for Core Conversions**: 
-  - `processDensity()`, `volumetricToMass()`, and `massToVolumetric()` are now static methods
-  - Eliminates unnecessary instance state dependencies
-  - Improves performance for repeated conversions
-  - Better adherence to Python best practices
-
-- **Class-Level Density Constants**:
-  - Density constants moved from instance variables to class constants
-  - More efficient memory usage and cleaner code organization
-  - Constants: `DENSITY_WATER`, `DENSITY_ETHANOL`, `DENSITY_SUGAR`, `DENSITY_FIBER`
-
-- **Enhanced Output Flexibility**:
-  - New `output_type` parameter in conversion methods
-  - Three output formats: 'amount' (values), 'composition' (fractions), or 'full' (both)
-  - Provides cleaner API for different use cases
-
-- **Streamlined Documentation**:
-  - Simplified docstrings without sacrificing clarity
-  - Better focused parameter descriptions
-  - Improved code organization and readability
-
-- **Performance Improvements**:
-  - Static methods reduce method lookup overhead
-  - Class constants improve memory efficiency
-  - Cleaner code flow with fewer state dependencies
+### Practical Guides
+- **[Examples & Tutorials](examples.md)** - Step-by-step examples and common use cases
+- **[Best Practices](best-practices.md)** - Tips for effective modeling
+- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
 
 ## 🚀 Quick Navigation
 
-### For New Users
-Start with [Getting Started](getting-started.md) to install the package and run your first simulation.
+### By Use Case
 
-### For Developers
-Check out the [API Reference](api-reference.md) for detailed documentation of all classes and methods with comprehensive parameter descriptions and examples.
+**I want to...**
+- **Model a single process** → [Process Systems](process-systems.md)
+- **Connect multiple components** → [Connector Systems](connector-systems.md)
+- **Add pumping capability** → [Pump System](pump-system.md)
+- **Build a complete facility** → [Facility System](facility-system.md)
+- **Track power consumption** → [API Reference - Power Tracking](api-reference.md#power-consumption-tracking)
+- **Calculate costs** → [API Reference - Cost Tracking](api-reference.md#cost-tracking)
+- **See working examples** → [Examples](examples.md)
 
-### For Process Engineers
-Review [Process Systems](process-systems.md) and [Connector Systems](connector-systems.md) for detailed information about the physical models and engineering principles.
+### By Component Type
 
-### For Learning
-Explore [Examples](examples.md) for practical tutorials and use cases with clear, concise inline documentation.
+- **[Base Process Class](api-reference.md#process-class)** - Foundation for all processes
+- **[Fermentation](process-systems.md#fermentation)** - Sugar to ethanol conversion
+- **[Filtration](process-systems.md#filtration)** - Solid particle removal
+- **[Distillation](process-systems.md#distillation)** - Ethanol concentration
+- **[Dehydration](process-systems.md#dehydration)** - Water removal for high purity
+- **[Pipe](connector-systems.md#pipe)** - Straight segment transport
+- **[Bend](connector-systems.md#bend)** - Direction change with losses
+- **[Valve](connector-systems.md#valve)** - Flow control
+- **[Pump](pump-system.md)** - Pressure/velocity increase
+- **[Facility](facility-system.md)** - Complete system integration
 
-## 📊 Project Features
+## 📊 Model Capabilities
 
-- ✅ Mass flow rate and volumetric flow rate balance calculations
-- ✅ Power consumption tracking with configurable rates and units
-- ✅ Energy consumption tracking with detailed logging
-- ✅ Cost tracking for process economics
-- ✅ Energy loss modeling for fluid transport
-- ✅ Configurable efficiency parameters
-- ✅ Flexible input/output formats
-- ✅ Comprehensive logging system
-- ✅ Built-in visualization capabilities
-- ✅ Batch processing with iterative methods
-- ✅ **NEW v0.7.0**: Static methods and class constants for better design
-- ✅ **NEW v0.7.0**: Flexible output type options for conversions
+### Flow Calculations
+- Mass flow rate processing
+- Volumetric flow rate processing
+- Automatic unit conversions
+- Component tracking (ethanol, water, sugar, fiber)
 
-## 💡 Documentation Conventions
+### Energy & Power
+- Power consumption tracking
+- Energy balance calculations
+- Pump efficiency modeling
+- Net energy gain analysis
 
-Throughout this documentation:
-- **Parameters** are documented with types, units, and default values
-- **Returns** include type information and explanations
-- **Raises** sections document exceptions and error conditions
-- **Examples** demonstrate practical usage patterns
-- **Physical principles** are explained alongside calculations
+### Economic Analysis
+- Cost tracking per flow rate
+- Economic viability assessment
+- Power cost calculations
+- Revenue projections
 
-## 🔗 Additional Resources
+### Data Management
+- Comprehensive logging systems
+- Batch processing capabilities
+- Visualization support
+- Multiple output formats
 
-- [Main README](../README.md) - Project overview and quick start
-- [CHANGELOG](../CHANGELOG.md) - Version history and updates
-- [GitHub Repository](https://github.com/ENGR161-Team1/EthanolPlantModel) - Source code and issues
-- [License](../LICENSE) - MIT License details
+## 🎯 Learning Path
 
-## 📝 Contributing to Documentation
+### Beginner
+1. Read [Getting Started](getting-started.md)
+2. Review [Basic Concepts](getting-started.md#basic-concepts)
+3. Try [Example 1: Simple Fermentation](examples.md#example-1-simple-fermentation)
+4. Explore [Process Systems](process-systems.md)
 
-If you find areas where documentation could be improved:
-1. Check the source code for inline comments and docstrings
-2. Review existing documentation files
-3. Submit issues or pull requests with suggestions
+### Intermediate
+1. Study [Connector Systems](connector-systems.md)
+2. Learn about [Pump System](pump-system.md)
+3. Work through [Example 3: Complete Pipeline](examples.md#example-3-complete-process-pipeline)
+4. Review [Power Tracking](api-reference.md#power-consumption-tracking)
 
-All documentation follows [NumPy docstring conventions](https://numpydoc.readthedocs.io/en/latest/format.html) for consistency.
+### Advanced
+1. Master [Facility System](facility-system.md)
+2. Implement [Example 6: Complete Facility](examples.md#example-6-complete-facility-with-pump-and-power-analysis)
+3. Study [Best Practices](best-practices.md)
+4. Explore economic optimization
+
+## 🔧 Technical Reference
+
+### Key Classes
+- `Process` - Base class for all processes
+- `Fermentation`, `Filtration`, `Distillation`, `Dehydration` - Processor implementations
+- `Connector`, `Pipe`, `Bend`, `Valve` - Fluid transport components
+- `Pump` - Pumping operations
+- `Facility` - System integration
+
+### Key Methods
+- `processMassFlow()` - Process mass flow rates
+- `processVolumetricFlow()` - Process volumetric flow rates
+- `processPowerConsumption()` - Track power usage
+- `pump_process()` - Pump operations
+- `facility_process()` - Complete facility processing
+
+### Physical Constants
+- Water density: 1000 kg/m³
+- Ethanol density: 789 kg/m³
+- Sugar density: 1590 kg/m³
+- Fiber density: 1500 kg/m³
+- Ethanol energy density: 28.818 MJ/kg
+
+## 📝 Additional Resources
+
+- **[CHANGELOG](../CHANGELOG.md)** - Version history and updates
+- **[README](../README.md)** - Project overview
+- **[GitHub Repository](https://github.com/ENGR161-Team1/EthanolPlantModel)** - Source code
+- **[Issue Tracker](https://github.com/ENGR161-Team1/EthanolPlantModel/issues)** - Report bugs
+
+## 🤝 Contributing
+
+We welcome contributions! Please see the main [README](../README.md#contributing) for guidelines.
+
+## 📧 Support
+
+For questions or issues:
+- Check [Troubleshooting](troubleshooting.md)
+- Search existing [Issues](https://github.com/ENGR161-Team1/EthanolPlantModel/issues)
+- Contact the team (see [README](../README.md#team-members))
 
 ---
 
-*Last updated: Version 0.7.0 - November 2025*
+**Version:** 0.8.0 | **Last Updated:** November 2025

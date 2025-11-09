@@ -412,6 +412,130 @@ print("     Ethanol: mass_flow / 789 kg/m³ = volumetric_flow")
 # - Fiber (cellulose): 1311 kg/m³ (solid density)
 ```
 
+## Example 6: Complete Facility with Pump and Power Analysis
+
+```python
+from systems.facility import Facility
+from systems.pump import Pump
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
+from systems.connectors import Pipe, Bend, Valve
+
+# Create facility components
+pump = Pump(
+    name="Main Feed Pump",
+    efficiency=0.85,
+    opening_diameter=0.15,  # 15 cm diameter
+    cost=5000  # $5000 per m³/s
+)
+
+# Create process chain
+fermentation = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,  # 50 kW
+    power_consumption_unit="kW"
+)
+
+filtration = Filtration(
+    efficiency=0.98,
+    power_consumption_rate=20,
+    power_consumption_unit="kW"
+)
+
+distillation = Distillation(
+    efficiency=0.92,
+    power_consumption_rate=100,
+    power_consumption_unit="kW"
+)
+
+dehydration = Dehydration(
+    efficiency=0.99,
+    power_consumption_rate=30,
+    power_consumption_unit="kW"
+)
+
+# Create connectors
+pipe1 = Pipe(length=50, diameter=0.1, friction_factor=0.02)
+bend1 = Bend(angle=90, diameter=0.1, efficiency=0.95)
+valve1 = Valve(diameter=0.1, resistance_coefficient=2.0)
+pipe2 = Pipe(length=30, diameter=0.1, friction_factor=0.02)
+
+# Build complete facility
+facility = Facility(
+    pump=pump,
+    components=[
+        fermentation,
+        pipe1,
+        filtration,
+        bend1,
+        distillation,
+        valve1,
+        dehydration,
+        pipe2
+    ]
+)
+
+# Process material through facility
+input_composition = {
+    "water": 0.625,    # 62.5% water
+    "sugar": 0.3125,   # 31.25% sugar
+    "fiber": 0.0625    # 6.25% fiber
+}
+
+result = facility.facility_process(
+    input_volume_composition=input_composition,
+    input_volumetric_flow=0.001,  # 1 L/s
+    interval=3600,  # 1 hour
+    store_data=True
+)
+
+# Analyze results
+print("=== Facility Performance Analysis ===")
+print(f"Total Power Consumed: {result['total_power_consumed']/1000:.2f} kW")
+print(f"Energy Generated: {result['power_generated']/1e6:.2f} MJ")
+print(f"Net Energy Gain: {result['net_power_gained']/1e6:.2f} MJ")
+print(f"\nEthanol Production: {result['mass_flow']['amount']['ethanol']:.4f} kg/s")
+print(f"Ethanol Purity: {result['mass_flow']['composition']['ethanol']:.2%}")
+
+# Calculate economic metrics
+energy_cost = 0.10  # $0.10 per kWh
+ethanol_price = 2.50  # $2.50 per kg
+
+power_cost_per_hour = (result['total_power_consumed'] / 1000) * energy_cost
+ethanol_revenue_per_hour = result['mass_flow']['amount']['ethanol'] * 3600 * ethanol_price
+net_profit_per_hour = ethanol_revenue_per_hour - power_cost_per_hour
+
+print(f"\n=== Economic Analysis (per hour) ===")
+print(f"Power Cost: ${power_cost_per_hour:.2f}")
+print(f"Ethanol Revenue: ${ethanol_revenue_per_hour:.2f}")
+print(f"Net Profit: ${net_profit_per_hour:.2f}")
+```
+
+## Example 7: Pump Performance Comparison
+
+```python
+from systems.pump import Pump
+
+# Compare different pump efficiencies
+efficiencies = [0.6, 0.75, 0.85, 0.95]
+input_flow = 0.001  # 1 L/s
+composition = {"water": 0.7, "ethanol": 0.2, "sugar": 0.1}
+
+print("=== Pump Efficiency Comparison ===")
+print(f"Input Flow: {input_flow*1000:.1f} L/s\n")
+
+for eff in efficiencies:
+    pump = Pump(efficiency=eff, opening_diameter=0.1)
+    mass_flow, vol_flow, power = pump.pump_process(
+        input_volume_flow=input_flow,
+        input_composition=composition
+    )
+    
+    print(f"Efficiency: {eff:.0%}")
+    print(f"  Output Flow: {vol_flow*1000:.4f} L/s")
+    print(f"  Power Consumed: {power:.2f} W")
+    print(f"  Flow Increase: {(vol_flow/input_flow - 1)*100:.2f}%\n")
+```
+
 ## Best Practices (Enhanced for v0.6.1)
 
 ### Leveraging Enhanced Documentation

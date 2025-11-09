@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.6.1
+**Version:** 0.8.0
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -23,21 +23,29 @@ Full documentation is available in the [docs](docs/) folder:
 
 ```python
 from systems.processors import Fermentation
+from systems.facility import Facility
+from systems.pump import Pump
+from systems.connectors import Pipe
 
-# Create a fermentation system with 95% efficiency
+# Create a complete facility with pump and processes
+pump = Pump(efficiency=0.85, opening_diameter=0.15)
 fermenter = Fermentation(efficiency=0.95)
+pipe = Pipe(length=10, diameter=0.1)
 
-# Process mass flow rate inputs
-result = fermenter.processMassFlow(
-    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
-    input_type="amount",
-    output_type="full",
-    store_outputs=True
+facility = Facility(pump=pump, components=[fermenter, pipe])
+
+# Process material through the facility
+result = facility.facility_process(
+    input_volume_composition={"water": 0.625, "sugar": 0.3125, "fiber": 0.0625},
+    input_volumetric_flow=0.001,  # 1 L/s
+    interval=1,
+    store_data=True
 )
 
-print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
-print(f"Water remaining: {result['amount']['water']:.2f} kg")
-print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
+print(f"Total power consumed: {result['total_power_consumed']:.2f} W")
+print(f"Energy generated: {result['power_generated']:.2f} J")
+print(f"Net power gain: {result['net_power_gained']:.2f} J")
+print(f"Ethanol produced: {result['mass_flow']['amount']['ethanol']:.4f} kg/s")
 ```
 
 ## Features
@@ -46,6 +54,9 @@ print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
 - ✅ Power consumption tracking with configurable rates and units
 - ✅ Energy consumption tracking for all processes with detailed logging
 - ✅ Cost tracking for process economics with configurable rates
+- ✅ **Pump modeling with efficiency-based energy calculations**
+- ✅ **Integrated facility management for complete process chains**
+- ✅ **Net power gain analysis for ethanol production systems**
 - ✅ Energy loss modeling for fluid transport (Darcy-Weisbach, bend losses)
 - ✅ Configurable efficiency parameters for all process units
 - ✅ Flexible input/output formats (amount, composition, or full)
@@ -74,8 +85,18 @@ All processes support:
 - **Pipe** - Straight segments with friction losses (Darcy-Weisbach equation)
 - **Bend** - Elbows with direction change losses based on bend geometry
 - **Valve** - Flow control with adjustable resistance coefficients
+- **Pump** - Increases fluid pressure/velocity with efficiency-based power consumption
 
 All connectors conserve mass while calculating realistic energy dissipation based on fluid dynamics principles. The connectors use a dedicated `processEnergy` method to calculate output kinetic energy after accounting for energy losses, which is then used to determine output flow rates.
+
+### Facility Management
+
+- **Facility** - Orchestrates complete process chains with integrated power tracking
+  - Sequential processing through pumps, processes, and connectors
+  - Automatic flow state management (mass and volumetric)
+  - Total power consumption tracking across all components
+  - Energy generation calculations from ethanol production
+  - Net power gain analysis for economic viability assessment
 
 ## Installation
 
@@ -120,7 +141,9 @@ EthanolPlantModel/
 ├── systems/
 │   ├── process.py      # Base Process class for all systems
 │   ├── processors.py   # Process implementations (Fermentation, Filtration, etc.)
-│   └── connectors.py   # Fluid transport connectors (Pipe, Bend, Valve)
+│   ├── connectors.py   # Fluid transport connectors (Pipe, Bend, Valve)
+│   ├── pump.py         # Pump class for fluid dynamics
+│   └── facility.py     # Facility class for system integration
 ├── docs/               # Documentation
 │   ├── README.md
 │   ├── getting-started.md
@@ -133,21 +156,14 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.6.1)
+## Recent Updates (v0.8.0)
 
-### Documentation Enhancements
-- **Comprehensive documentation improvements:**
-  - Added detailed docstrings for all Process and Connector class methods
-  - Enhanced parameter descriptions with types, units, and default values
-  - Improved method documentation with clear descriptions of functionality
-  - Added return value documentation with types and explanations
-  - Documented error conditions and exceptions raised by methods
-  - Enhanced code comments explaining conversion calculations and logging behavior
-- **Improved code clarity:**
-  - Added inline comments for complex calculations and conversions
-  - Better explanation of mass/volumetric flow conversions
-  - Clear documentation of energy and cost tracking mechanisms
-  - Enhanced understanding of connector power loss calculations
+### New System Components
+- **Pump class:** Models pumping operations with efficiency-based energy calculations, configurable performance ratings, and accurate flow velocity modeling
+- **Facility class:** Provides integrated system management for complete process chains with automatic power tracking and net energy gain analysis
+
+### Enhanced Power Modeling
+- **Updated `processPowerConsumption()`:** Now returns power consumption rate (W) instead of energy consumed (J), providing clearer instantaneous power information while maintaining energy logging capabilities
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 

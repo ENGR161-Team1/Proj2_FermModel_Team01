@@ -1,332 +1,363 @@
 # Getting Started
 
-**Version:** 0.7.0
+Welcome to the Ethanol Plant Model! This guide will help you install and start using the package.
 
-This guide will help you install and start using the Ethanol Plant Model.
+## Table of Contents
 
-## 🆕 What's New in v0.7.0
-
-Version 0.7.0 includes major architectural improvements:
-- **Static methods** for core conversions - cleaner API and better performance
-- **Class-level density constants** - improved code organization and efficiency
-- **Flexible output types** - choose between amounts, compositions, or both
-- **Streamlined docstrings** - easier to read while maintaining clarity
-
-See [API Reference](api-reference.md) for v0.7.0 migration guide!
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Concepts](#basic-concepts)
+- [Your First Model](#your-first-model)
+- [Next Steps](#next-steps)
 
 ## Installation
 
 ### Prerequisites
 
 - Python >= 3.10
-- System dependencies (Ubuntu/Debian):
-  ```bash
-  sudo apt install libgirepository2.0-dev libcairo2-dev libgtk-4-dev \
-      pkg-config python3-dev python3-gi python3-gi-cairo \
-      gir1.2-gtk-4.0 gobject-introspection
-  ```
+- pip or uv package manager
+- System dependencies (for PyGObject)
 
-### Using pip
+### System Dependencies
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install libgirepository2.0-dev libcairo2-dev libgtk-4-dev \
+    pkg-config python3-dev python3-gi python3-gi-cairo \
+    gir1.2-gtk-4.0 gobject-introspection
+```
+
+**Fedora:**
+```bash
+sudo dnf install cairo-gobject-devel gobject-introspection-devel \
+    gtk4-devel python3-devel
+```
+
+**macOS:**
+```bash
+brew install pygobject3 gtk4
+```
+
+### Install with pip
 
 ```bash
+# Clone the repository
 git clone https://github.com/ENGR161-Team1/EthanolPlantModel.git
 cd EthanolPlantModel
+
+# Install the package
 pip install .
 ```
 
-### Using uv (Recommended)
+### Install with uv (Faster)
 
 ```bash
+# Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone and install
 git clone https://github.com/ENGR161-Team1/EthanolPlantModel.git
 cd EthanolPlantModel
 uv pip install .
 ```
 
-## Key Features
+### Verify Installation
 
-- ✅ **Mass and Volumetric Flow Processing** - Handle both mass and volumetric flow rates
-- ✅ **Power Consumption Tracking** - Monitor energy usage with configurable rates
-- ✅ **Cost Tracking** - Track operational costs based on volumetric flow rates
-- ✅ **Flexible I/O Formats** - Support amount, composition, or full output formats
-- ✅ **Comprehensive Logging** - Track inputs, outputs, power, energy, and costs
-- ✅ **Batch Processing** - Process multiple input sets efficiently
-- ✅ **Process Efficiency Modeling** - Configure efficiency parameters for each unit
-- ✅ **Fluid Transport Dynamics** - Model energy losses in pipes, bends, and valves
-- ✅ **v0.7.0: Static Methods** - Cleaner API for conversion functions
-- ✅ **v0.7.0: Flexible Output Types** - Choose output format that fits your needs
+```python
+# Test import
+from systems.processors import Fermentation
+from systems.pump import Pump
+from systems.facility import Facility
 
-## Basic Usage
+print("✓ Installation successful!")
+```
 
-### Simple Example
+## Quick Start
+
+### Example 1: Simple Fermentation
 
 ```python
 from systems.processors import Fermentation
 
-# Create a fermentation system with efficiency and cost parameters
-fermenter = Fermentation(
-    efficiency=0.95,
-    power_consumption_rate=100,
-    power_consumption_unit="kWh/day",
-    cost_per_flow=25.0  # $25 per m³/s of flow
-)
+# Create a fermentation system
+fermenter = Fermentation(efficiency=0.95)
 
-# Process mass flow inputs with cost tracking
+# Process sugar solution
 result = fermenter.processMassFlow(
-    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
-    input_type="amount",
-    output_type="full",
-    store_outputs=True,
-    store_cost=True  # Track costs
-)
-
-# Access results
-print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
-print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
-
-# Check consumption data
-print(f"Cost incurred: ${fermenter.consumption_log['cost_incurred'][-1]:.2f}")
-```
-
-### Processing Mass Flow Rates
-
-```python
-# Process mass flow rate inputs
-result = fermenter.processMassFlow(
-    inputs={"ethanol": 0, "water": 100, "sugar": 50, "fiber": 10},
-    input_type="amount",
-    output_type="full",
-    store_outputs=True
-)
-
-print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg/s")
-print(f"Ethanol purity: {result['composition']['ethanol']:.2%}")
-```
-
-### Processing Volumetric Flow Rates
-
-```python
-# Process volumetric flow rate inputs
-result = fermenter.processVolumetricFlow(
-    inputs={"water": 0.1, "sugar": 0.03, "fiber": 0.01},  # m³/s
-    input_type="amount",
-    output_type="full",
-    store_outputs=True
-)
-
-print(f"Total output flow: {sum(result['amount'].values()):.4f} m³/s")
-```
-
-### Energy Consumption Tracking
-
-```python
-# Create a process with energy consumption
-from systems.processors import Distillation
-
-distiller = Distillation(
-    efficiency=0.90,
-    power_consumption_rate=100,
-    power_consumption_unit="kW"
-)
-
-# Calculate energy consumed over 1 hour (3600 seconds)
-energy = distiller.processPowerConsumption(
-    interval=3600,
-    store_energy=True
-)
-
-print(f"Energy consumed: {energy/3.6e6:.2f} kWh")
-```
-
-### Batch Processing
-
-```python
-# Process multiple input sets
-batch_inputs = {
-    "ethanol": [0, 0, 0],
-    "water": [100, 150, 200],
-    "sugar": [50, 75, 100],
-    "fiber": [10, 15, 20]
-}
-
-output_log = fermenter.iterateMassFlowInputs(
-    inputValues=batch_inputs,
+    inputs={
+        "ethanol": 0,
+        "water": 100,    # 100 kg water
+        "sugar": 50,     # 50 kg sugar
+        "fiber": 10      # 10 kg fiber
+    },
     input_type="amount",
     output_type="full"
 )
 
-# Access results
-ethanol_outputs = output_log["mass_flow"]["amount"]["ethanol"]
-print(f"Ethanol production: {ethanol_outputs}")
+# View results
+print(f"Ethanol produced: {result['amount']['ethanol']:.2f} kg")
+print(f"Ethanol composition: {result['composition']['ethanol']:.2%}")
 ```
 
-## Understanding Input/Output Types
+### Example 2: Complete Facility
 
-### Input Types
-
-- **`amount`**: Absolute mass flow rates (kg/s) or volumetric flow rates (m³/s)
-- **`composition`**: Fractional compositions (0-1) + total flow rate
-- **`full`**: Both amounts and compositions provided
-
-### Output Types (v0.7.0+)
-
-- **`amount`**: Returns only component amounts - lightweight output
-- **`composition`**: Returns only component fractions - minimal data
-- **`full`**: Returns both amounts and compositions - complete data
-
-**Example:**
 ```python
-# Get only amounts (lightweight)
-amounts = fermenter.processMassFlow(inputs=data, output_type="amount")
-# Returns: {"ethanol": 24.44, "water": 89.5, ...}
+from systems.facility import Facility
+from systems.pump import Pump
+from systems.processors import Fermentation, Distillation
 
-# Get only compositions (normalized fractions)
-comps = fermenter.processMassFlow(inputs=data, output_type="composition")
-# Returns: {"ethanol": 0.152, "water": 0.558, ...}
+# Create facility components
+pump = Pump(efficiency=0.85)
+fermenter = Fermentation(efficiency=0.95)
+distiller = Distillation(efficiency=0.92)
 
-# Get both (complete)
-full = fermenter.processMassFlow(inputs=data, output_type="full")
-# Returns: {"amount": {...}, "composition": {...}}
+# Build facility
+facility = Facility(
+    pump=pump,
+    components=[fermenter, distiller]
+)
+
+# Process material
+result = facility.facility_process(
+    input_volume_composition={
+        "water": 0.7,
+        "sugar": 0.3
+    },
+    input_volumetric_flow=0.001,  # 1 L/s
+    interval=3600  # 1 hour
+)
+
+# Analyze results
+print(f"Power consumed: {result['total_power_consumed']/1000:.2f} kW")
+print(f"Net energy: {result['net_power_gained']/1e6:.2f} MJ")
+print(f"Ethanol output: {result['mass_flow']['amount']['ethanol']*3600:.2f} kg/hr")
 ```
 
-## Static Methods (v0.7.0+)
+## Basic Concepts
 
-**NEW**: Core conversion methods are now static - call them directly on the class!
+### Flow Representations
 
-### Using Static Conversion Methods
+The model uses two flow representations:
 
+**1. Mass Flow (kg/s):**
 ```python
-from systems.process import Process
-
-# Convert volumetric to mass using static method
-mass_flows = Process.volumetricToMass(
-    inputs={"ethanol": 0.05, "water": 0.25},
-    mode="amount"
-)
-
-# Convert mass to volumetric using static method
-volumetric_flows = Process.massToVolumetric(
-    inputs=mass_flows,
-    mode="amount"
-)
-
-# Calculate density using static method
-density = Process.processDensity(mass_flow=100, volumetric_flow=0.1)
+mass_flow = {
+    "ethanol": 0.1,   # 0.1 kg/s
+    "water": 0.5,     # 0.5 kg/s
+    "sugar": 0.2,     # 0.2 kg/s
+    "fiber": 0.05     # 0.05 kg/s
+}
 ```
 
-### Class-Level Density Constants (v0.7.0+)
-
-Access component densities directly from the class:
-
+**2. Volumetric Flow (m³/s):**
 ```python
-print(f"Water density: {Process.DENSITY_WATER} kg/m³")
-print(f"Ethanol density: {Process.DENSITY_ETHANOL} kg/m³")
-print(f"Sugar density: {Process.DENSITY_SUGAR} kg/m³")
-print(f"Fiber density: {Process.DENSITY_FIBER} kg/m³")
-
-# Used automatically in all conversions
+volumetric_flow = {
+    "ethanol": 0.0001,  # 0.1 L/s
+    "water": 0.0005,    # 0.5 L/s
+    "sugar": 0.0001,    # 0.1 L/s
+    "fiber": 0.00003    # 0.03 L/s
+}
 ```
 
-## Migration from v0.6.x to v0.7.0
+### Component Tracking
 
-### Static Method Changes
+The model tracks four components:
+- **Ethanol** - Product of fermentation
+- **Water** - Solvent and process medium
+- **Sugar** - Fermentation feedstock
+- **Fiber** - Solid impurities
 
+### Input/Output Modes
+
+**Amount Mode:** Absolute quantities
 ```python
-# ❌ v0.6.x style (instance method)
-mass = process.volumetricToMass(inputs=data, mode="amount")
-
-# ✅ v0.7.0 style (static method)
-mass = Process.volumetricToMass(inputs=data, mode="amount")
-
-# Both work, but v0.7.0 is cleaner and faster
+inputs = {"water": 100, "sugar": 50}  # kg or m³/s
 ```
 
-### Output Type Parameter
+**Composition Mode:** Fractions (sum to 1.0)
+```python
+inputs = {"water": 0.67, "sugar": 0.33}  # fractions
+```
+
+**Full Mode:** Both amount and composition
+```python
+result = {
+    "amount": {"water": 100, "sugar": 50},
+    "composition": {"water": 0.67, "sugar": 0.33}
+}
+```
+
+### Efficiency
+
+All processes have configurable efficiency (0-1):
+- **1.0** = 100% efficient (theoretical maximum)
+- **0.95** = 95% efficient (realistic)
+- **< 0.9** = Inefficient process
 
 ```python
-# v0.7.0: Choose what you want back
-amounts_only = process.processMassFlow(
-    inputs=data,
-    output_type="amount"  # Just amounts
+fermenter = Fermentation(efficiency=0.95)  # 95% efficient
+```
+
+## Your First Model
+
+Let's build a complete ethanol production model step by step.
+
+### Step 1: Import Components
+
+```python
+from systems.facility import Facility
+from systems.pump import Pump
+from systems.processors import Fermentation, Filtration, Distillation, Dehydration
+from systems.connectors import Pipe
+```
+
+### Step 2: Create Components
+
+```python
+# Pump
+pump = Pump(
+    name="Feed Pump",
+    efficiency=0.85,
+    opening_diameter=0.15  # 15 cm
 )
 
-comps_only = process.processMassFlow(
-    inputs=data,
-    output_type="composition"  # Just compositions
+# Processes
+fermentation = Fermentation(
+    efficiency=0.95,
+    power_consumption_rate=50,
+    power_consumption_unit="kW"
 )
 
-full_data = process.processMassFlow(
-    inputs=data,
-    output_type="full"  # Both (default)
+filtration = Filtration(
+    efficiency=0.98,
+    power_consumption_rate=20,
+    power_consumption_unit="kW"
 )
+
+distillation = Distillation(
+    efficiency=0.92,
+    power_consumption_rate=100,
+    power_consumption_unit="kW"
+)
+
+dehydration = Dehydration(
+    efficiency=0.99,
+    power_consumption_rate=30,
+    power_consumption_unit="kW"
+)
+
+# Connectors
+pipe1 = Pipe(length=20, diameter=0.1)
+pipe2 = Pipe(length=15, diameter=0.1)
+pipe3 = Pipe(length=10, diameter=0.1)
+```
+
+### Step 3: Build Facility
+
+```python
+facility = Facility(
+    pump=pump,
+    components=[
+        fermentation,
+        pipe1,
+        filtration,
+        pipe2,
+        distillation,
+        pipe3,
+        dehydration
+    ]
+)
+```
+
+### Step 4: Process Material
+
+```python
+result = facility.facility_process(
+    input_volume_composition={
+        "water": 0.625,    # 62.5%
+        "sugar": 0.3125,   # 31.25%
+        "fiber": 0.0625    # 6.25%
+    },
+    input_volumetric_flow=0.002,  # 2 L/s
+    interval=3600,  # 1 hour
+    store_data=True
+)
+```
+
+### Step 5: Analyze Results
+
+```python
+# Extract key metrics
+ethanol_output_kgh = result['mass_flow']['amount']['ethanol'] * 3600
+ethanol_purity = result['mass_flow']['composition']['ethanol']
+power_kw = result['total_power_consumed'] / 1000
+net_energy_mj = result['net_power_gained'] / 1e6
+
+# Print summary
+print("=== Production Summary ===")
+print(f"Ethanol Production: {ethanol_output_kgh:.2f} kg/hr")
+print(f"Ethanol Purity: {ethanol_purity:.2%}")
+print(f"Power Consumed: {power_kw:.2f} kW")
+print(f"Net Energy Gain: {net_energy_mj:.2f} MJ")
+
+# Economic analysis
+energy_cost = 0.10  # $/kWh
+ethanol_price = 2.50  # $/kg
+
+hourly_power_cost = power_kw * energy_cost
+hourly_revenue = ethanol_output_kgh * ethanol_price
+hourly_profit = hourly_revenue - hourly_power_cost
+
+print("\n=== Economics ===")
+print(f"Power Cost: ${hourly_power_cost:.2f}/hr")
+print(f"Revenue: ${hourly_revenue:.2f}/hr")
+print(f"Profit: ${hourly_profit:.2f}/hr")
 ```
 
 ## Next Steps
 
-Now that you have the basics:
+### Learn More
 
-1. **Explore the API**: Check out [API Reference](api-reference.md) for complete method documentation
-2. **Learn about processes**: Read [Process Systems](process-systems.md) for detailed process information
-3. **Understand connectors**: See [Connector Systems](connector-systems.md) for fluid transport physics
-4. **Try examples**: Work through [Examples](examples.md) with practical tutorials
-5. **Review source code**: All code includes comprehensive inline comments
+- **[Process Systems](process-systems.md)** - Detailed process documentation
+- **[Connector Systems](connector-systems.md)** - Fluid transport components
+- **[Pump System](pump-system.md)** - Pump modeling
+- **[Facility System](facility-system.md)** - System integration
+- **[Examples](examples.md)** - More examples and tutorials
 
-## Getting Help
+### Common Tasks
 
-### Using Built-in Help
-
-In Python, you can access documentation directly:
-
+**Track power consumption:**
 ```python
-# View class documentation
-help(Fermentation)
-
-# View method documentation
-help(fermenter.processMassFlow)
-
-# In IPython/Jupyter
-Fermentation?
-fermenter.processMassFlow?
+power = process.processPowerConsumption(
+    store_energy=True,
+    interval=3600
+)
 ```
 
-### Understanding Errors
-
-v0.7.0 maintains clear error messages. When you encounter a `ValueError`:
-
+**Batch processing:**
 ```python
-try:
-    result = process.processMassFlow(inputs={}, input_type='composition')
-except ValueError as e:
-    print(f"Error: {e}")
-    # Output: Error clearly states what's missing and why
+results = process.iterateMassFlowInputs(
+    inputValues=[input1, input2, input3]
+)
 ```
 
-### Common Issues
-
-**Issue**: `AttributeError: 'Process' object has no attribute 'volumetricToMass'`
+**Convert between flow types:**
 ```python
-# ❌ Wrong: Using as instance method
-mass = process.volumetricToMass(inputs=data)
-
-# ✅ Correct: Use static method on class
-mass = Process.volumetricToMass(inputs=data)
+mass_flow = Process.volumetricToMass(
+    inputs=volumetric_flow,
+    mode="amount"
+)
 ```
 
-**Issue**: `KeyError` when accessing results
-```python
-# Check what output_type you requested
-result = process.processMassFlow(inputs=data, output_type="amount")
-# Returns: dict of amounts only, no 'composition' key
+### Get Help
 
-# Use output_type="full" to get both
-result = process.processMassFlow(inputs=data, output_type="full")
-# Returns: {"amount": {...}, "composition": {...}}
-```
+- **[Troubleshooting](troubleshooting.md)** - Common issues
+- **[Best Practices](best-practices.md)** - Tips and patterns
+- **[API Reference](api-reference.md)** - Complete documentation
+- **[GitHub Issues](https://github.com/ENGR161-Team1/EthanolPlantModel/issues)** - Report bugs
 
----
+## See Also
 
-*For detailed API documentation, see [API Reference](api-reference.md)*
-
-*For practical examples, see [Examples](examples.md)*
-
-*Last updated: Version 0.7.0 - November 2025*
+- [API Reference](api-reference.md) - Complete API documentation
+- [Examples](examples.md) - Practical examples
+- [Best Practices](best-practices.md) - Recommended patterns

@@ -5,6 +5,38 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-11-09
+
+### Added
+- **Pump class for fluid dynamics:**
+  - New `Pump` class in `systems/pump.py` for modeling pumping operations
+  - Configurable pump parameters: performance rating, efficiency, cost, and opening diameter
+  - `pump_process()` method calculates output flow rates and power consumption
+  - Energy balance calculations based on inlet velocity and pump efficiency
+  - Cross-sectional area calculations for accurate flow velocity modeling
+
+- **Facility class for system integration:**
+  - New `Facility` class in `systems/facility.py` for orchestrating multiple processes
+  - Sequential processing through pumps, processes, and connectors
+  - Integrated power consumption tracking across all components
+  - Energy generation calculations from ethanol production
+  - Net power gain analysis (energy generated - energy consumed)
+  - Automatic flow state management (volumetric and mass representations)
+
+### Changed
+- **Enhanced `processPowerConsumption()` method:**
+  - Changed return value from energy consumed to power consumption rate
+  - Method now returns instantaneous power in Watts instead of energy in Joules
+  - Still logs energy consumed when `store_energy=True` for tracking purposes
+  - Updated docstring to clarify power rate vs energy distinction
+
+### Improved
+- **Comprehensive system integration:**
+  - Facility class seamlessly integrates Process, Connector, and Pump components
+  - Automatic conversion between mass and volumetric flow representations
+  - Unified power tracking methodology across all system components
+  - Enhanced energy balance calculations considering ethanol energy density (28.818 MJ/kg)
+
 ## [0.7.0] - 2025-11-09
 
 ### Changed
