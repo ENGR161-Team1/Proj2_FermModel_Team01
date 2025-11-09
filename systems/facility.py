@@ -53,12 +53,14 @@ class Facility():
                 Default is 0 W.
         
         Returns:
-            tuple: (current_volumetric_flow, current_mass_flow, total_power_consumed)
-                - current_volumetric_flow (dict): Output with keys "total_volumetric_flow",
+            dict: Facility output with keys:
+                - "volumetric_flow" (dict): Output with keys "total_volumetric_flow",
                   "amount" (component flows in m³/s), "composition" (component fractions)
-                - current_mass_flow (dict): Output with keys "total_mass_flow",
+                - "mass_flow" (dict): Output with keys "total_mass_flow",
                   "amount" (component flows in kg/s), "composition" (component fractions)
-                - total_power_consumed (float): Total power consumed by all components in Watts
+                - "total_power_consumed" (float): Total power consumed by all components in Watts
+                - "power_generated" (float): Energy generated from ethanol production in Joules
+                - "net_power_gained" (float): Net power gain (generated - consumed) in Joules
         """
         store_data = kwargs.get("store_data", False)
         input_volume_composition = kwargs.get("input_volume_composition", {})
@@ -179,4 +181,14 @@ class Facility():
                 current_volumetric_flow["amount"] = volumetric_output["amount"]
                 current_volumetric_flow["composition"] = volumetric_output["composition"]
         
-        return current_volumetric_flow, current_mass_flow, total_power_consumed
+        power_generated = (current_mass_flow["amount"].get("ethanol", 0) * 
+                            Facility.ETHANOL_ENERGY_DENSITY * interval)
+        net_power_gained = power_generated - total_power_consumed
+
+        return {
+            "volumetric_flow": current_volumetric_flow,
+            "mass_flow": current_mass_flow,
+            "total_power_consumed": total_power_consumed,
+            "power_generated": power_generated,
+            "net_power_gained": net_power_gained
+        }
