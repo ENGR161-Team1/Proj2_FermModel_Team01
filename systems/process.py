@@ -89,7 +89,7 @@ class Process:
             self.energy_consumption_rate *= 1000  # Convert to W
         self.components = ["ethanol", "water", "sugar", "fiber"]
         self.efficiency = kwargs.get("efficiency", 1.0)
-        self.massFlowFunction = kwargs.get("massFunction", None)
+        self.massFlowFunction = kwargs.get("massFlowFunction", None)
         
         # Density constants for conversion between mass and flow (kg/m^3)
         self.densityWater = 997  # kg/m^3
