@@ -8,13 +8,13 @@ class Connector:
     """
     def __init__(self, **kwargs):
         """
-        Initialize a connector with energy function and diameter.
+        Initialize a connector with power function and diameter.
         
         Args:
-            energy_consumed: Function to calculate energy consumed by connector
+            power_consumed: Function to calculate power consumed by connector (Watts)
             diameter: Inner diameter of the connector in meters (default: 0.1m)
         """
-        self.energyConsumed = kwargs.get("energy_consumed", None)
+        self.powerConsumed = kwargs.get("power_consumed", None)
         self.diameter = kwargs.get("diameter", 0.1)
         self.cross_sectional_area = math.pi * (self.diameter / 2) ** 2
     
@@ -23,66 +23,63 @@ class Connector:
         Calculate fluid density based on mass and volumetric flow rates.
         
         Args:
-            inputs: Dictionary containing:
-                - input_flow: Volumetric flow rate in m³/s
-                - input_mass: Mass flow rate in kg/s
+            input_volumetric_flow: Volumetric flow rate in m³/s
+            input_mass_flow: Mass flow rate in kg/s
         
         Returns:
             Density in kg/m³, or 0 if volumetric flow is zero
         """
-        input_flow = kwargs.get("input_flow", 0)
-        input_mass = kwargs.get("input_mass", 0)
-        return input_mass / input_flow if input_flow != 0 else 0
+        input_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
+        input_mass_flow = kwargs.get("input_mass_flow", 0)
+        return input_mass_flow / input_volumetric_flow if input_volumetric_flow != 0 else 0
     
-    def processEnergy(self, **kwargs):
+    def processPower(self, **kwargs):
         """
-        Calculate output kinetic energy after energy losses.
+        Calculate output kinetic power after power losses.
         
         Args:
-            input_energy: Input kinetic energy in Joules
+            input_power: Input kinetic power in Watts
             
         Returns:
-            output_energy: Output kinetic energy in Joules
+            output_power: Output kinetic power in Watts
         """
-        input_energy = kwargs.get("input_energy", 0)
-        return input_energy - self.energyConsumed(**kwargs)
+        input_power = kwargs.get("input_power", 0)
+        return input_power - self.powerConsumed(**kwargs)
 
 
     def processFlow(self, **kwargs):
         """
-        Calculate output volumetric flow rate after energy losses.
+        Calculate output volumetric flow rate after power losses.
         
         Args:
-            input_flow: Input volumetric flow rate in m³/s
-            input_mass: Input mass flow rate in kg/s
-            interval: Time interval in seconds (default: 1s)
+            input_volumetric_flow: Input volumetric flow rate in m³/s
+            input_mass_flow: Input mass flow rate in kg/s
         
         Returns:
             float: Output volumetric flow rate in m³/s
         """
         # Extract input parameters from kwargs
-        input_flow = kwargs.get("input_flow", 0)
-        input_mass = kwargs.get("input_mass", 0)
-        interval = kwargs.get("interval", 1)
+        input_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
+        input_mass_flow = kwargs.get("input_mass_flow", 0)
         
         # Calculate flow velocity from volumetric flow rate and cross-sectional area
-        velocity = input_flow / self.cross_sectional_area if self.cross_sectional_area != 0 else 0
+        velocity = input_volumetric_flow / self.cross_sectional_area if self.cross_sectional_area != 0 else 0
         
-        # Calculate input kinetic energy over the time interval
-        input_energy = interval * input_mass * (velocity ** 2) / 2
-        
-        # Calculate output energy after accounting for energy losses
-        output_energy = self.processEnergy(input_energy=input_energy)
+        # Calculate input kinetic power
+        input_power = input_mass_flow * (velocity ** 2) / 2
 
-        # Calculate output flow rate from output energy using inverse kinetic energy formula
-        output_flow = (2 * output_energy * self.cross_sectional_area**2 / (self.processDensity(**kwargs) * interval)) ** (1 / 3) if self.processDensity(**kwargs) * interval != 0 else 0
-        return output_flow
+        # Calculate output power after accounting for power losses
+        output_power = self.processPower(input_power=input_power, **kwargs)
+        
+        # Calculate output flow rate from output power using inverse kinetic power formula
+        output_volumetric_flow = (2 * output_power * self.cross_sectional_area**2 / self.processDensity(**kwargs)) ** (1 / 3) if self.processDensity(**kwargs) != 0 else 0
+        return output_volumetric_flow
 
 
 class Pipe(Connector):
     """
     Represents a straight pipe segment with friction losses.
-    Energy loss is calculated using the Darcy-Weisbach equation.
+    Power loss is calculated using the Darcy-Weisbach equation.
     """
     def __init__(self, **kwargs):
         """
@@ -95,30 +92,30 @@ class Pipe(Connector):
         """
         self.length = kwargs.get("length", 1.0)
         self.friction_factor = kwargs.get("friction_factor", 0.02)
-        super().__init__(energy_consumed=self.pipeEnergyFunction, diameter=kwargs.get("diameter", 0.1))
+        super().__init__(power_consumed=self.pipePowerFunction, diameter=kwargs.get("diameter", 0.1))
     
-    def pipeEnergyFunction(self, **kwargs):
+    def pipePowerFunction(self, **kwargs):
         """
-        Calculate energy consumed due to friction in the pipe.
+        Calculate power consumed due to friction in the pipe.
         Uses Darcy-Weisbach equation for pressure drop.
         
         Args:
-            input_flow: Volumetric flow rate in m³/s
-            input_mass: Mass flow rate in kg/s
+            input_volumetric_flow: Volumetric flow rate in m³/s
+            input_mass_flow: Mass flow rate in kg/s
         
         Returns:
-            Energy consumed due to friction (Joules)
+            Power consumed due to friction (Watts)
         """
-        input_flow = kwargs.get("input_flow", 0)
-        input_mass = kwargs.get("input_mass", 0)
+        input_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
+        input_mass_flow = kwargs.get("input_mass_flow", 0)
         
-        return input_mass * (8 * self.friction_factor * self.length * input_flow**2) / (math.pi**2 * self.diameter**5)
+        return input_mass_flow * (8 * self.friction_factor * self.length * input_volumetric_flow**2) / (math.pi**2 * self.diameter**5)
 
 
 class Bend(Connector):
     """
-    Represents a pipe bend or elbow with associated energy losses.
-    Energy loss is proportional to the dynamic pressure and bend geometry.
+    Represents a pipe bend or elbow with associated power losses.
+    Power loss is proportional to the dynamic pressure and bend geometry.
     """
     def __init__(self, **kwargs):
         """
@@ -131,34 +128,34 @@ class Bend(Connector):
         """
         self.bend_radius = kwargs.get("bend_radius", 0.5)
         self.bend_factor = kwargs.get("bend_factor", 0.9)
-        super().__init__(energy_consumed=self.bendEnergyFunction, diameter=kwargs.get("diameter", 0.1))
+        super().__init__(power_consumed=self.bendPowerFunction, diameter=kwargs.get("diameter", 0.1))
     
-    def bendEnergyFunction(self, **kwargs):
+    def bendPowerFunction(self, **kwargs):
         """
-        Calculate energy consumed in the bend due to flow direction change.
-        Loss is based on kinetic energy and bend efficiency.
+        Calculate power consumed in the bend due to flow direction change.
+        Loss is based on kinetic power and bend efficiency.
         
         Args:
-            input_flow: Volumetric flow rate in m³/s
-            input_mass: Mass flow rate in kg/s
+            input_volumetric_flow: Volumetric flow rate in m³/s
+            input_mass_flow: Mass flow rate in kg/s
         
         Returns:
-            Energy consumed due to bend (Joules)
+            Power consumed due to bend (Watts)
         """
-        input_flow = kwargs.get("input_flow", 0)
-        input_mass = kwargs.get("input_mass", 0)
+        input_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
+        input_mass_flow = kwargs.get("input_mass_flow", 0)
 
-        if input_flow == 0 or input_mass == 0:
+        if input_volumetric_flow == 0 or input_mass_flow == 0:
             return 0
 
-        velocity = input_flow / self.cross_sectional_area
-        return input_mass * (1 - self.bend_factor) * (velocity ** 2) / 2
+        velocity = input_volumetric_flow / self.cross_sectional_area
+        return input_mass_flow * (1 - self.bend_factor) * (velocity ** 2) / 2
 
 
 class Valve(Connector):
     """
     Represents a valve with adjustable flow resistance.
-    Energy loss is proportional to the dynamic pressure and resistance coefficient.
+    Power loss is proportional to the dynamic pressure and resistance coefficient.
     """
     def __init__(self, **kwargs):
         """
@@ -169,22 +166,22 @@ class Valve(Connector):
             diameter: Inner diameter in meters (default: 0.1m)
         """
         self.resistance_coefficient = kwargs.get("resistance_coefficient", 1.0)
-        super().__init__(energy_consumed=self.valveEnergyFunction, diameter=kwargs.get("diameter", 0.1))
+        super().__init__(power_consumed=self.valvePowerFunction, diameter=kwargs.get("diameter", 0.1))
     
-    def valveEnergyFunction(self, **kwargs):
+    def valvePowerFunction(self, **kwargs):
         """
-        Calculate energy consumed through the valve.
-        Loss is based on kinetic energy and resistance coefficient.
+        Calculate power consumed through the valve.
+        Loss is based on kinetic power and resistance coefficient.
         
         Args:
-            input_flow: Volumetric flow rate in m³/s
-            input_mass: Mass flow rate in kg/s
+            input_volumetric_flow: Volumetric flow rate in m³/s
+            input_mass_flow: Mass flow rate in kg/s
         
         Returns:
-            Energy consumed due to valve resistance (Joules)
+            Power consumed due to valve resistance (Watts)
         """
-        input_flow = kwargs.get("input_flow", 0)
-        input_mass = kwargs.get("input_mass", 0)
+        input_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
+        input_mass_flow = kwargs.get("input_mass_flow", 0)
         
-        velocity = input_flow / self.cross_sectional_area
-        return input_mass * (velocity ** 2) * self.resistance_coefficient / 2
+        velocity = input_volumetric_flow / self.cross_sectional_area
+        return input_mass_flow * (velocity ** 2) * self.resistance_coefficient / 2
