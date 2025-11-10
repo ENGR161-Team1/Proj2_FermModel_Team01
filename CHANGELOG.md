@@ -5,6 +5,52 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-11-09
+
+### 🔧 Patch Release - Analysis Improvements
+
+This patch release enhances the decision matrix analysis model with improved testing coverage and data export capabilities.
+
+### Added
+
+- **Comprehensive visualization suite** for decision matrix analysis
+  - Multi-panel visualization with 17 charts across 4 analysis categories
+  - Build cost analysis by component (pump, fermenter, filtration, distillation, dehydration)
+  - Operational cost analysis with diameter and friction factor impacts
+  - Power return analysis across all configuration parameters
+  - Composite score breakdown for top configurations
+- **Enhanced data export capabilities**
+  - Full results export to CSV with all configurations and scores
+  - Top 10 configurations export for quick reference
+  - Summary statistics export with key metrics
+  - All exports saved to dedicated `data/` folder
+- **Duplicate configuration detection and removal**
+  - Automatic deduplication of test configurations
+  - Tracking of tested configurations to prevent redundant testing
+  - Detailed reporting of duplicates found and removed
+
+### Improved
+
+- **Testing workflow optimization**
+  - Progress indicators during extensive testing phases
+  - Better flow threshold analysis with comprehensive test ranges
+  - More robust error handling during facility testing
+- **Results presentation**
+  - Enhanced console output formatting with clear section headers
+  - Improved top 10 displays across all categories
+  - Better visualization of score components and weights
+
+### Fixed
+
+- Duplicate configuration testing that was inflating result counts
+- Data folder creation to ensure export paths exist
+- Visualization sizing and layout for better readability
+
+### Documentation
+
+- Updated all documentation files to reflect v1.0.1
+- Enhanced inline comments in analysis notebook
+
 ## [1.0.0] - 2025-11-09
 
 ### 🎉 Full Release - Production Ready
@@ -196,6 +242,26 @@ This release maintains full backward compatibility with v0.8.x. No breaking chan
   - Added additional project URLs (Repository, Documentation, Changelog, Issues)
   - Updated license field in pyproject.toml
 
+## [0.5.4] - 2025-11-09
+
+### Added
+- **Cost tracking integrated into consumption logs:**
+  - Added `cost_per_unit_flow` and `cost_incurred` fields to `consumption_log`
+  - Cost tracking now integrated alongside power and energy consumption
+  - Enhanced logging structure to capture economic metrics
+
+### Changed
+- **Refactored consumption tracking:**
+  - Enhanced `consumption_log` to include cost data alongside power/energy metrics
+  - Updated logging methods to handle cost calculations
+  - Improved parameter handling for cost tracking in Process class
+
+### Improved
+- **Enhanced documentation:**
+  - Added examples for power consumption tracking configuration
+  - Updated Process systems documentation with power consumption parameter details
+  - Better explanation of consumption tracking capabilities
+
 ## [0.5.3] - 2025-11-09
 
 ### Added
@@ -358,9 +424,205 @@ processor.iterateMassFlowInputs(inputValues=batch_data)
 ### Fixed
 - Fixed `components` initialization in System class (changed from `self.components = self.components` to proper list initialization)
 
-## [0.2.x and earlier]
+## [0.2.4] - 2025-11-07
 
-Earlier versions focused on initial development of the ethanol plant model with basic process systems and connector implementations.
+### Improved
+- **Enhanced documentation:**
+  - Updated README.md with clearer explanations of processing methods
+  - Added comprehensive examples for mass and flow input processing
+  - Improved clarity on single batch vs iterative processing workflows
+  - Enhanced feature descriptions with better formatting
+
+## [0.2.3] - 2025-11-07
+
+### Added
+- **Batch processing capabilities:**
+  - New `iterateMassInputs()` method for processing multiple sets of mass inputs iteratively
+  - New `iterateFlowInputs()` method for processing multiple sets of flow inputs iteratively
+  - Support for multiple input formats: 'amount', 'composition', or 'full'
+  - Automatic storage of all processed results in input/output logs
+  - Comprehensive validation of input data structures
+
+### Improved
+- **Enhanced data processing workflow:**
+  - Methods handle variable-length input arrays automatically
+  - Support for total_mass_list when using composition-based inputs
+  - Better error handling for mismatched array lengths
+  - Improved documentation with detailed parameter descriptions
+
+## [0.2.2] - 2025-11-07
+
+### Changed
+- **Refactored input/output log structure:**
+  - Removed 'total' from composition dictionaries for cleaner data organization
+  - Separated 'total_mass' and 'total_flow' as dedicated fields in logs
+  - Enhanced clarity by distinguishing between component amounts/compositions and totals
+  - Improved data structure for better analysis and visualization
+
+### Improved
+- **Code organization:**
+  - Cleaner log structure with separated amount/composition/total tracking
+  - Removed redundant total calculations in composition dictionaries
+  - Better separation of concerns in data tracking
+  - Optimized code for improved readability and maintainability
+
+## [0.2.1] - 2025-11-07
+
+### Fixed
+- Fixed object attribute error in System class initialization
+- Corrected components list initialization from `self.components = self.components` to proper list: `["ethanol", "water", "sugar", "fiber"]`
+
+### Improved
+- Enhanced code documentation with better inline comments
+- Consolidated copyright notices in LICENSE file
+
+## [0.2.0] - 2025-11-06
+
+### Added
+- **Flow-based processing logic:**
+  - New `processFlow()` method for handling volumetric flow rate inputs (m³)
+  - Comprehensive flow rate tracking in input/output logs
+  - Support for flow-based composition and amount calculations
+  - Automatic conversions between mass and flow representations
+
+### Changed
+- **Enhanced input/output logging structure:**
+  - Added separate 'flow' section to input_log and output_log
+  - Parallel tracking for both mass (kg) and flow (m³) representations
+  - Unified data structure supporting both mass-based and flow-based calculations
+  - Improved log organization with amount/composition separation
+
+### Improved
+- **Enhanced project documentation:**
+  - Updated README.md with comprehensive project description
+  - Added detailed feature list
+  - Improved process stage descriptions with technical details
+  - Enhanced usage examples for both mass and flow processing
+  - Better formatting and organization throughout documentation
+
+## [0.1.0] - 2025-11-05
+
+### Added
+- **Visualization capabilities:**
+  - New `display()` method in System class for plotting input/output relationships
+  - Matplotlib integration with GTK4 backend support
+  - Ability to visualize relationships between specific input and output components
+  - Enhanced data visualization for process analysis
+
+### Changed
+- **Improved GTK4 integration:**
+  - Fixed GTK dependency configuration issues
+  - Updated pyproject.toml to include proper GTK4 dependencies
+  - Better handling of PyGObject integration
+  - Removed unnecessary libgirepository1.0-dev requirement from documentation
+
+### Improved
+- **Enhanced documentation:**
+  - Updated README.md with detailed installation instructions for GTK4
+  - Added usage examples demonstrating visualization capabilities
+  - Improved descriptions of the four-stage ethanol production process
+  - Added testing and contributing guidelines
+  - Better organization of installation steps
+
+### Fixed
+- Removed debug print statements from processes.py for cleaner output
+- Fixed input iteration logic in `iterateInputs()` method
+- Improved massFunction reference handling
+
+## [0.0.5] - 2025-11-XX
+
+### Added
+- **Batch input processing:**
+  - Implemented `iterateInputs()` method for processing multiple input sets
+  - Support for iterating through time-series or batch data
+  - Automatic output generation for each input set
+  - Enhanced input/output logging for batch processing
+
+### Changed
+- **Refactored System class initialization:**
+  - Removed redundant inputs and outputs parameters
+  - Streamlined constructor for better clarity
+  - Improved parameter handling in subclasses
+
+### Fixed
+- Fixed input processing logic in `iterateInputs()` method
+- Corrected massFunction references throughout the codebase
+- Removed debugging print statements for production readiness
+
+## [0.0.4] - 2025-11-XX
+
+### Added
+- **Dehydration process:**
+  - New `Dehydration` class for water removal stage
+  - `dehydrate()` method for processing inputs through dehydration
+  - Support for efficiency-based water removal calculations
+  - Completes the four-stage ethanol production pipeline
+
+### Improved
+- **Enhanced project documentation:**
+  - Updated README.md with detailed project overview
+  - Added comprehensive installation instructions
+  - Included usage examples for all four process stages
+  - Improved project metadata in pyproject.toml
+
+## [0.0.3] - 2025-11-XX
+
+### Added
+- **Distillation process:**
+  - New `Distillation` class for ethanol-water separation
+  - `distill()` method for processing inputs through distillation
+  - Efficiency-based separation calculations
+  - Input validation for distillation parameters
+
+### Improved
+- **Project setup and documentation:**
+  - Added comprehensive README.md with project overview
+  - Enhanced LICENSE file with proper author attribution
+  - Updated author information in pyproject.toml
+  - Better project structure documentation
+
+### Fixed
+- Fixed project version naming inconsistencies
+- Corrected author name formatting in configuration files
+
+## [0.0.2] - 2025-11-XX
+
+### Added
+- **Filtration process:**
+  - New `Filtration` class for fiber removal
+  - `filter()` method for processing inputs through filtration
+  - Efficiency-based fiber removal calculations
+  - Support for configurable filtration efficiency
+
+### Changed
+- **System class improvements:**
+  - Refined constructor implementation
+  - Better parameter handling
+  - Improved internal structure
+
+## [0.0.1] - 2025-11-XX
+
+### Added
+- **Core System class:**
+  - Base `System` class with mass conversion placeholder
+  - Input/output logging structure
+  - Component tracking for ethanol, water, sugar, and fiber
+
+- **Fermentation process:**
+  - `Fermentation` class as first process implementation
+  - `ferment()` method for sugar-to-ethanol conversion
+  - Configurable efficiency parameters
+  - Stoichiometric calculations based on biochemical conversion
+
+- **Project infrastructure:**
+  - Initial project structure with pyproject.toml
+  - Basic README.md (initially blank)
+  - MIT License file
+  - Git repository initialization with .gitignore
+
+### Fixed
+- Fixed efficiency calculation errors in Fermentation class
+- Removed placeholder comments after implementation
 
 ---
 

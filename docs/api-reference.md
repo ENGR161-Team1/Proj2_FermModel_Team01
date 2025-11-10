@@ -480,6 +480,13 @@ print(f"Total cost: ${result['total_cost_consumed']:.2f}")
 
 ## Version History
 
+**v1.0.1 - Patch Release:**
+- 🔧 Enhanced decision matrix analysis with comprehensive visualizations
+- Added duplicate configuration detection and removal
+- Improved data export capabilities with dedicated data folder
+- Better testing workflow with progress indicators
+- Updated all documentation
+
 **v1.0.0 - Full Release:**
 - 🎉 Production-ready stable release
 - Complete feature set with validated simulation capabilities

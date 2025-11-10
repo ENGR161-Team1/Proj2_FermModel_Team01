@@ -225,7 +225,7 @@ When reporting bugs, include:
 1. **Version information:**
 ```python
 import systems
-print(f"Version: 1.0.0")  # From pyproject.toml
+print(f"Version: 1.0.1")  # From pyproject.toml
 ```
 
 2. **System information:**
