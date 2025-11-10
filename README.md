@@ -1,6 +1,6 @@
 # Ethanol Plant Model
 
-**Version:** 0.8.0
+**Version:** 0.8.1
 
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](docs/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -43,6 +43,7 @@ result = facility.facility_process(
 )
 
 print(f"Total power consumed: {result['total_power_consumed']:.2f} W")
+print(f"Total cost consumed: {result['total_cost_consumed']:.2f} USD")
 print(f"Energy generated: {result['power_generated']:.2f} J")
 print(f"Net power gain: {result['net_power_gained']:.2f} J")
 print(f"Ethanol produced: {result['mass_flow']['amount']['ethanol']:.4f} kg/s")
@@ -156,14 +157,18 @@ EthanolPlantModel/
 └── pyproject.toml
 ```
 
-## Recent Updates (v0.8.0)
+## Recent Updates (v0.8.1)
 
-### New System Components
-- **Pump class:** Models pumping operations with efficiency-based energy calculations, configurable performance ratings, and accurate flow velocity modeling
-- **Facility class:** Provides integrated system management for complete process chains with automatic power tracking and net energy gain analysis
+### Cost Tracking System
+- **Facility cost tracking:** New `cost` attribute tracks total facility cost across all components and pump
+- **Cost consumption tracking:** `facility_process()` now returns `total_cost_consumed` field for economic analysis
+- **Component-level cost accumulation:** Automatic cost tracking for pump operations, process flows, and connectors
 
-### Enhanced Power Modeling
-- **Updated `processPowerConsumption()`:** Now returns power consumption rate (W) instead of energy consumed (J), providing clearer instantaneous power information while maintaining energy logging capabilities
+### Enhanced Batch Processing
+- **Added `store_cost` parameter:** Process batch methods (`iterateMassFlowInputs()` and `iterateVolumetricFlowInputs()`) now support cost logging
+
+### Code Improvements
+- **Simplified processor initialization:** Cleaner constructor implementations for Fermentation, Filtration, Distillation, and Dehydration classes
 
 See [CHANGELOG.md](CHANGELOG.md) for complete version history and previous updates.
 

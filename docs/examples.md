@@ -1,12 +1,19 @@
 # Examples
 
-**Version:** 0.7.0
+**Version:** 0.8.1
 
 Practical examples and tutorials for using the Ethanol Plant Model.
 
-## 🆕 v0.7.0 Updates
+## 🆕 v0.8.1 Updates
 
 All examples now demonstrate:
+- **Cost tracking** in Facility class for economic analysis
+- **Total cost consumption** in facility_process() output
+- **Enhanced economic analysis** with process cost tracking
+
+## 🆕 v0.7.0 Updates
+
+Examples demonstrate:
 - **Static methods** for cleaner conversion code
 - **Flexible output types** to choose your output format
 - **Class constants** for density values
@@ -491,21 +498,26 @@ result = facility.facility_process(
 # Analyze results
 print("=== Facility Performance Analysis ===")
 print(f"Total Power Consumed: {result['total_power_consumed']/1000:.2f} kW")
+print(f"Total Cost Consumed: ${result['total_cost_consumed']:.2f}")
 print(f"Energy Generated: {result['power_generated']/1e6:.2f} MJ")
 print(f"Net Energy Gain: {result['net_power_gained']/1e6:.2f} MJ")
 print(f"\nEthanol Production: {result['mass_flow']['amount']['ethanol']:.4f} kg/s")
 print(f"Ethanol Purity: {result['mass_flow']['composition']['ethanol']:.2%}")
 
-# Calculate economic metrics
+# Calculate economic metrics (v0.8.1: includes process costs)
 energy_cost = 0.10  # $0.10 per kWh
 ethanol_price = 2.50  # $2.50 per kg
 
 power_cost_per_hour = (result['total_power_consumed'] / 1000) * energy_cost
+process_cost_per_hour = result['total_cost_consumed']  # v0.8.1: Direct cost tracking
+total_cost_per_hour = power_cost_per_hour + process_cost_per_hour
 ethanol_revenue_per_hour = result['mass_flow']['amount']['ethanol'] * 3600 * ethanol_price
-net_profit_per_hour = ethanol_revenue_per_hour - power_cost_per_hour
+net_profit_per_hour = ethanol_revenue_per_hour - total_cost_per_hour
 
 print(f"\n=== Economic Analysis (per hour) ===")
 print(f"Power Cost: ${power_cost_per_hour:.2f}")
+print(f"Process Cost: ${process_cost_per_hour:.2f}")
+print(f"Total Cost: ${total_cost_per_hour:.2f}")
 print(f"Ethanol Revenue: ${ethanol_revenue_per_hour:.2f}")
 print(f"Net Profit: ${net_profit_per_hour:.2f}")
 ```
@@ -594,6 +606,8 @@ vol_back = process.massToVolumetric(inputs=mass, mode="amount")
 
 *All examples benefit from comprehensive docstrings and inline comments added in v0.6.1*
 
+*Cost tracking in Facility class added in v0.8.1*
+
 *Use `help()` on any class or method to see detailed documentation!*
 
-*Last updated: Version 0.6.1 - November 2025*
+*Last updated: Version 0.8.1 - November 2025*

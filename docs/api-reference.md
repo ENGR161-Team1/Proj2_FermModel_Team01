@@ -412,15 +412,18 @@ mass_flow, vol_flow, power = pump.pump_process(
 
 ### `Facility(**kwargs)`
 
-Orchestrates material flow through multiple processes and connectors with integrated power tracking.
+Orchestrates material flow through multiple processes and connectors with integrated power and cost tracking.
 
 **Parameters:**
 - `components` (list): List of Process and Connector instances. Default: []
 - `pump` (Pump): Pump instance for the facility. Default: Pump()
 
+**Attributes:**
+- `cost` (float): Total facility cost (USD) - sum of all component costs and pump cost
+
 ### `add_component(component)`
 
-Adds a process or connector to the facility.
+Adds a process or connector to the facility and updates facility cost.
 
 **Parameters:**
 - `component` (Process or Connector): Component to add
@@ -428,13 +431,13 @@ Adds a process or connector to the facility.
 **Example:**
 ```python
 facility = Facility()
-facility.add_component(Fermentation(efficiency=0.95))
-facility.add_component(Pipe(length=10))
+facility.add_component(Fermentation(efficiency=0.95, cost_per_flow=0.5))
+facility.add_component(Pipe(length=10, cost=100))
 ```
 
 ### `facility_process(**kwargs)`
 
-Processes material through all facility components sequentially.
+Processes material through all facility components sequentially with power and cost tracking.
 
 **Parameters:**
 - `store_data` (bool): Whether to log input/output data. Default: False
@@ -447,6 +450,7 @@ Processes material through all facility components sequentially.
   - `"volumetric_flow"` (dict): Output volumetric flow data
   - `"mass_flow"` (dict): Output mass flow data
   - `"total_power_consumed"` (float): Total power consumed in Watts
+  - `"total_cost_consumed"` (float): Total cost consumed in USD
   - `"power_generated"` (float): Energy generated from ethanol in Joules
   - `"net_power_gained"` (float): Net power gain (generated - consumed) in Joules
 
@@ -457,8 +461,8 @@ from systems.pump import Pump
 from systems.processors import Fermentation
 
 facility = Facility(
-    pump=Pump(efficiency=0.85),
-    components=[Fermentation(efficiency=0.95)]
+    pump=Pump(efficiency=0.85, cost=10),
+    components=[Fermentation(efficiency=0.95, cost_per_flow=0.5)]
 )
 
 result = facility.facility_process(
@@ -469,11 +473,19 @@ result = facility.facility_process(
 )
 
 print(f"Net power: {result['net_power_gained']:.2f} J")
+print(f"Total cost: ${result['total_cost_consumed']:.2f}")
 ```
 
 ---
 
 ## Version History
+
+**v0.8.1 Changes:**
+- Added `cost` attribute to Facility class
+- `add_component()` now updates facility cost
+- `facility_process()` returns `total_cost_consumed` in output
+- Cost tracking for pump, processes, and connectors
+- Added `store_cost` parameter to batch processing methods
 
 **v0.7.0 Changes:**
 - Conversion methods (`volumetricToMass`, `massToVolumetric`, `processDensity`) now static

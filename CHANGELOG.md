@@ -5,6 +5,37 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2025-11-09
+
+### Added
+- **Cost tracking in Facility class:**
+  - New `cost` attribute to track total facility cost across all components
+  - `add_component()` method now updates facility cost when components are added
+  - Cost accumulation from pump, processes, and connectors
+
+- **Cost consumption tracking in facility_process():**
+  - New `total_cost_consumed` field returned in facility_process() output
+  - Cost calculation for pump operations based on volumetric flow
+  - Cost calculation for processes using `cost_per_flow` multiplied by volumetric flow
+  - Cost calculation for connectors using fixed cost per connector
+  - Enhanced docstring for facility_process() to document cost tracking
+
+### Changed
+- **Updated Facility initialization:**
+  - Constructor now initializes facility cost from all components and pump
+  - Improved cost accumulation tracking throughout the facility
+
+- **Enhanced Process batch processing methods:**
+  - Added `store_cost` parameter to `iterateMassFlowInputs()` method
+  - Added `store_cost` parameter to `iterateVolumetricFlowInputs()` method
+  - Both methods now support cost logging when enabled
+
+### Improved
+- **Processor class initialization:**
+  - Simplified Fermentation, Filtration, Distillation, and Dehydration class constructors
+  - Used `setdefault()` pattern for cleaner default parameter handling
+  - Reduced constructor complexity while maintaining all functionality
+
 ## [0.8.0] - 2025-11-09
 
 ### Added

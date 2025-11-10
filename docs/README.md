@@ -136,4 +136,4 @@ For questions or issues:
 
 ---
 
-**Version:** 0.8.0 | **Last Updated:** November 2025
+**Version:** 0.8.1 | **Last Updated:** November 2025

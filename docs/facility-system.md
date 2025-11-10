@@ -95,6 +95,7 @@ Processes material through all facility components sequentially.
   - `"amount"` (dict): Component flows in kg/s
   - `"composition"` (dict): Component fractions
 - `"total_power_consumed"` (float): Total power in Watts
+- `"total_cost_consumed"` (float): Total cost in USD
 - `"power_generated"` (float): Energy from ethanol in Joules
 - `"net_power_gained"` (float): Net energy (generated - consumed) in Joules
 
@@ -202,6 +203,58 @@ net_energy = energy_generated - total_power_consumed
 **Positive net energy** → Economically viable
 **Negative net energy** → Energy input exceeds output
 
+## Cost Tracking
+
+### Total Cost Consumption
+
+Cost is accumulated from three sources:
+
+```python
+total_cost = pump_cost + process_costs + connector_costs
+```
+
+**Pump Cost:**
+```python
+pump_cost = pump.cost × input_volumetric_flow
+```
+
+**Process Cost:**
+```python
+process_cost = process.cost_per_flow × volumetric_flow_through_process
+```
+
+**Connector Cost:**
+```python
+connector_cost = connector.cost  # Fixed cost per connector
+```
+
+### Cost Output
+
+The `facility_process()` method returns:
+- `"total_cost_consumed"` (float): Total cost in USD
+
+**Example:**
+
+```python
+result = facility.facility_process(
+    input_volume_composition={"water": 0.7, "sugar": 0.3},
+    input_volumetric_flow=0.001,
+    interval=3600
+)
+
+print(f"Total cost: ${result['total_cost_consumed']:.2f}")
+```
+
+### Facility Cost Initialization
+
+When a Facility is created, the total facility cost is calculated:
+
+```python
+facility.cost = sum(component.cost for component in components) + pump.cost
+```
+
+This cost attribute tracks the fixed capital/operational cost of the facility.
+
 ## Usage Examples
 
 ### Example 1: Simple Facility
@@ -262,6 +315,7 @@ result = facility.facility_process(
 # Analyze results
 print("=== Facility Performance ===")
 print(f"Total Power: {result['total_power_consumed']/1000:.2f} kW")
+print(f"Total Cost: ${result['total_cost_consumed']:.2f}")
 print(f"Energy Generated: {result['power_generated']/1e6:.2f} MJ")
 print(f"Net Energy: {result['net_power_gained']/1e6:.2f} MJ")
 print(f"Ethanol Output: {result['mass_flow']['amount']['ethanol']*3600:.2f} kg/hr")
@@ -287,14 +341,18 @@ result = facility.facility_process(
 # Annual calculations
 annual_power_kwh = (result['total_power_consumed'] / 1000) * operating_hours
 annual_power_cost = annual_power_kwh * energy_cost
+annual_process_cost = result['total_cost_consumed'] * operating_hours
 
 annual_ethanol_kg = result['mass_flow']['amount']['ethanol'] * 3600 * operating_hours
 annual_revenue = annual_ethanol_kg * ethanol_price
 
-annual_profit = annual_revenue - annual_power_cost
+annual_total_cost = annual_power_cost + annual_process_cost
+annual_profit = annual_revenue - annual_total_cost
 
 print("=== Economic Analysis ===")
 print(f"Annual Power Cost: ${annual_power_cost:,.2f}")
+print(f"Annual Process Cost: ${annual_process_cost:,.2f}")
+print(f"Annual Total Cost: ${annual_total_cost:,.2f}")
 print(f"Annual Ethanol Production: {annual_ethanol_kg:,.0f} kg")
 print(f"Annual Revenue: ${annual_revenue:,.2f}")
 print(f"Annual Profit: ${annual_profit:,.2f}")
