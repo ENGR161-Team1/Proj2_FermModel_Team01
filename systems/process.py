@@ -550,6 +550,7 @@ class Process:
             output_type (str): 'amount', 'composition', or 'full'. Default: 'full'.
             total_mass_list (list): List of total mass flows (kg/s).
                 Required when input_type='composition'. Length must match input sets.
+            store_cost (bool): Whether to log cost data. Default: False.
         
         Returns:
             dict: Updated output_log with all processed results.
@@ -560,6 +561,7 @@ class Process:
         input_type = kwargs.get("input_type", "amount")
         output_type = kwargs.get("output_type", "full")
         total_mass_flow_list = kwargs.get("total_mass_list", None)
+        store_cost = kwargs.get("store_cost", False)
         
         if input_type not in ["amount", "composition", "full"]:
             raise ValueError("input_type must be either 'amount', 'composition', or 'full'")
@@ -595,7 +597,8 @@ class Process:
                 output_type=output_type,
                 total_mass=total_mass_flow,
                 store_inputs=True,
-                store_outputs=True
+                store_outputs=True,
+                store_cost=store_cost
             )
         
         return self.output_log
@@ -613,6 +616,7 @@ class Process:
             output_type (str): 'amount', 'composition', or 'full'. Default: 'full'.
             total_flow_list (list): List of total volumetric flows (m³/s).
                 Required when input_type='composition'. Length must match input sets.
+            store_cost (bool): Whether to log cost data. Default: False.
         
         Returns:
             dict: Updated output_log with all processed results.
@@ -623,6 +627,7 @@ class Process:
         input_type = kwargs.get("input_type", "amount")
         output_type = kwargs.get("output_type", "full")
         total_volumetric_flow_list = kwargs.get("total_flow_list", None)
+        store_cost = kwargs.get("store_cost", False)
         
         if input_type not in ["amount", "composition", "full"]:
             raise ValueError("input_type must be either 'amount', 'composition', or 'full'")
@@ -658,7 +663,8 @@ class Process:
                 output_type=output_type,
                 total_flow=total_volumetric_flow,
                 store_inputs=True,
-                store_outputs=True
+                store_outputs=True,
+                store_cost=store_cost
             )
         
         return self.output_log

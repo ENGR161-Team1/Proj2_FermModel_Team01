@@ -17,11 +17,9 @@ class Fermentation(Process):
             power_consumption_rate: Power consumed by fermentation (default: 0 W)
             power_consumption_unit: Unit for power consumption (default: "kWh/day")
         """
-        super().__init__(
-            name=kwargs.get("name", "Fermentation"),
-            massFlowFunction=self.ferment,
-            **kwargs
-        )
+        kwargs.setdefault("name", "Fermentation")
+        kwargs["massFlowFunction"] = self.ferment
+        super().__init__(**kwargs)
 
     
     def ferment(self, input=dict()):
@@ -57,11 +55,9 @@ class Filtration(Process):
             power_consumption_rate: Power consumed by filtration (default: 0 W)
             power_consumption_unit: Unit for power consumption (default: "kWh/day")
         """
-        super().__init__(
-            name=kwargs.get("name", "Filtration"),
-            massFlowFunction=self.filter,
-            **kwargs
-        )
+        kwargs.setdefault("name", "Filtration")
+        kwargs["massFlowFunction"] = self.filter
+        super().__init__(**kwargs)
 
     
     def filter(self, input=dict()):
@@ -97,11 +93,9 @@ class Distillation(Process):
             power_consumption_rate: Power consumed by distillation (default: 0 W)
             power_consumption_unit: Unit for power consumption (default: "kWh/day")
         """
-        super().__init__(
-            name=kwargs.get("name", "Distillation"),
-            massFlowFunction=self.distill,
-            **kwargs
-        )
+        kwargs.setdefault("name", "Distillation")
+        kwargs["massFlowFunction"] = self.distill
+        super().__init__(**kwargs)
 
     
     def distill(self, input=dict()):
@@ -148,11 +142,9 @@ class Dehydration(Process):
             power_consumption_rate: Power consumed by dehydration (default: 0 W)
             power_consumption_unit: Unit for power consumption (default: "kWh/day")
         """
-        super().__init__(
-            name=kwargs.get("name", "Dehydration"),
-            massFlowFunction=self.dehydrate,
-            **kwargs
-        )
+        kwargs.setdefault("name", "Dehydration")
+        kwargs["massFlowFunction"] = self.dehydrate
+        super().__init__(**kwargs)
 
     
     def dehydrate(self, input=dict()):

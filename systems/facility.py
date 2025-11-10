@@ -24,6 +24,7 @@ class Facility():
         """
         self.components = kwargs.get("components", [])
         self.pump = kwargs.get("pump", Pump())
+        self.cost = sum(component.cost for component in self.components) + self.pump.cost
 
     def add_component(self, component):
         """
@@ -33,6 +34,7 @@ class Facility():
             component (Process or Connector): Unit to add to the facility's component list.
         """
         self.components.append(component)
+        self.cost += component.cost
     
     def facility_process(self, **kwargs):
         """
@@ -41,7 +43,7 @@ class Facility():
         Converts input volumetric composition to mass flow, passes material through
         all configured processes and connectors in order, maintaining both volumetric
         and mass representations throughout. Tracks power consumption from pump,
-        processes, and connectors.
+        processes, and connectors, as well as cost consumption.
         
         Args:
             store_data (bool, optional): Whether to log input/output data in each component.
@@ -59,6 +61,7 @@ class Facility():
                 - "mass_flow" (dict): Output with keys "total_mass_flow",
                   "amount" (component flows in kg/s), "composition" (component fractions)
                 - "total_power_consumed" (float): Total power consumed by all components in Watts
+                - "total_cost_consumed" (float): Total cost consumed by all components in USD
                 - "power_generated" (float): Energy generated from ethanol production in Joules
                 - "net_power_gained" (float): Net power gain (generated - consumed) in Joules
         """
@@ -67,8 +70,9 @@ class Facility():
         input_total_volumetric_flow = kwargs.get("input_volumetric_flow", 0)
         interval = kwargs.get("interval", 1)
         
-        # Initialize power consumption accumulator
+        # Initialize power and cost consumption accumulators
         total_power_consumed = 0
+        total_cost_consumed = 0
         
         # Convert input volumetric composition to mass flow representation
         mass_flow_output = Process.volumetricToMass(
@@ -100,6 +104,10 @@ class Facility():
             input_composition=current_volumetric_flow["composition"]
         )
         total_power_consumed += pump_power_consumed
+        
+        # Add pump cost consumption
+        pump_cost_consumed = self.pump.cost * current_volumetric_flow["total_volumetric_flow"]
+        total_cost_consumed += pump_cost_consumed
         
         # Update volumetric flow state with pump output
         current_volumetric_flow["total_volumetric_flow"] = pump_volumetric_flow
@@ -150,6 +158,10 @@ class Facility():
                 )
                 total_power_consumed += process_power_consumed
                 
+                # Accumulate cost consumption from process
+                process_cost_consumed = component.cost_per_flow * current_volumetric_flow["total_volumetric_flow"]
+                total_cost_consumed += process_cost_consumed
+                
             elif isinstance(component, Connector):
                 # Get power consumed by connector
                 connector_power_consumed = component.powerConsumed(
@@ -157,6 +169,10 @@ class Facility():
                     input_mass_flow=current_mass_flow["total_mass_flow"]
                 ) if component.powerConsumed else 0
                 total_power_consumed += connector_power_consumed
+                
+                # Get cost consumed by connector (fixed cost per connector)
+                connector_cost_consumed = component.cost
+                total_cost_consumed += connector_cost_consumed
                 
                 # Update total flow through connector (accounts for pressure drop, etc.)
                 current_volumetric_flow["total_volumetric_flow"] = component.processFlow(
@@ -189,6 +205,7 @@ class Facility():
             "volumetric_flow": current_volumetric_flow,
             "mass_flow": current_mass_flow,
             "total_power_consumed": total_power_consumed,
+            "total_cost_consumed": total_cost_consumed,
             "power_generated": power_generated,
             "net_power_gained": net_power_gained
         }
