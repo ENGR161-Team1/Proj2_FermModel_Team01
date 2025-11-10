@@ -105,4 +105,6 @@ Models flow control valves.
 
 *For complete API details with comprehensive docstrings and physics documentation, see [API Reference](api-reference.md)*
 
-*Last updated: Version 1.0.0 - November 2025*
+---
+
+*Last updated: Version 1.0.1 - November 2025*

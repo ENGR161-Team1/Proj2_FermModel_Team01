@@ -5,6 +5,52 @@ All notable changes to the Ethanol Plant Model project will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-11-09
+
+### 🔧 Patch Release - Analysis Improvements
+
+This patch release enhances the decision matrix analysis model with improved testing coverage and data export capabilities.
+
+### Added
+
+- **Comprehensive visualization suite** for decision matrix analysis
+  - Multi-panel visualization with 17 charts across 4 analysis categories
+  - Build cost analysis by component (pump, fermenter, filtration, distillation, dehydration)
+  - Operational cost analysis with diameter and friction factor impacts
+  - Power return analysis across all configuration parameters
+  - Composite score breakdown for top configurations
+- **Enhanced data export capabilities**
+  - Full results export to CSV with all configurations and scores
+  - Top 10 configurations export for quick reference
+  - Summary statistics export with key metrics
+  - All exports saved to dedicated `data/` folder
+- **Duplicate configuration detection and removal**
+  - Automatic deduplication of test configurations
+  - Tracking of tested configurations to prevent redundant testing
+  - Detailed reporting of duplicates found and removed
+
+### Improved
+
+- **Testing workflow optimization**
+  - Progress indicators during extensive testing phases
+  - Better flow threshold analysis with comprehensive test ranges
+  - More robust error handling during facility testing
+- **Results presentation**
+  - Enhanced console output formatting with clear section headers
+  - Improved top 10 displays across all categories
+  - Better visualization of score components and weights
+
+### Fixed
+
+- Duplicate configuration testing that was inflating result counts
+- Data folder creation to ensure export paths exist
+- Visualization sizing and layout for better readability
+
+### Documentation
+
+- Updated all documentation files to reflect v1.0.1
+- Enhanced inline comments in analysis notebook
+
 ## [1.0.0] - 2025-11-09
 
 ### 🎉 Full Release - Production Ready

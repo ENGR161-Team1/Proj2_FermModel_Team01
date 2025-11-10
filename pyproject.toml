@@ -1,6 +1,6 @@
 [project]
 name = "EthanolPlantModel"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
     { name = "Advay  Ramesh Chandra", email = "chand289@purdue.edu" },
     { name = "Karley Jo Hammond", email = "hammon88@purdue.edu" },
